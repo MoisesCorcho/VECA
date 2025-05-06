@@ -17,7 +17,6 @@ class Organization extends Model
         'cellphone',
         'phone',
         'email',
-        'city',
         'user_id',
     ];
 }
