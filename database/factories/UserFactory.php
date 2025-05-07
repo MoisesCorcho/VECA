@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\DniType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -24,11 +25,17 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            'name' => $this->faker->firstName(),
+            'last_name' => $this->faker->lastName(),
+            'email' => $this->faker->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
+            'password' => Hash::make('password'),
+            'remember_token' => null,
+            'cellphone' => $this->faker->numerify('##########'),
+            'dni_type' => $this->faker->randomElement(DniType::cases())->value,
+            'dni' => $this->faker->numerify('########'),
+            'active' => true,
+            'visits_per_day' => $this->faker->numberBetween(1, 10),
         ];
     }
 
@@ -37,8 +44,39 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /**
+     * Indicate that the user should be inactive.
+     */
+    public function inactive(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'active' => false,
+        ]);
+    }
+
+    /**
+     * Indicate that the user should have a specific number of visits per day.
+     */
+    public function withVisitsPerDay(int $visits): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'visits_per_day' => $visits,
+        ]);
+    }
+
+    /**
+     * Indicate that the user should have a specific type of identification.
+     */
+    public function withIdentification(string $type, string $number): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'dni_type' => $type,
+            'dni' => $number,
         ]);
     }
 }
