@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\Address;
 use App\Models\Organization;
 use App\Models\User;
+use App\Services\AddressService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -119,4 +121,66 @@ test('organization requires a name', function () {
 
     expect(fn() => Organization::create($data))
         ->toThrow(Exception::class);
+});
+
+test('organization has AddressTrait implemented', function () {
+    $organization = Organization::factory()->create();
+
+    expect($organization->addresses)->not->toBe(null);
+});
+
+test('address can be associated to an organization', function () {
+    $organization = Organization::factory()->create();
+
+    $addressService = app(AddressService::class);
+
+    $addressService->saveAddress($organization, [
+        'street' => '123 Main St',
+        'city' => 'Test City',
+        'state' => 'Test State',
+        'zip_code' => '12345',
+        'country' => 'Test Country',
+    ]);
+
+    expect($organization->addresses)->not->toBe(null)
+        ->and($organization->addresses)->toHaveCount(1)
+        ->and($organization->addresses->first())->toBeInstanceOf(Address::class)
+        ->and($organization->addresses->first()->street)->toBe('123 Main St')
+        ->and($organization->addresses->first()->city)->toBe('Test City')
+        ->and($organization->addresses->first()->state)->toBe('Test State')
+        ->and($organization->addresses->first()->zip_code)->toBe('12345')
+        ->and($organization->addresses->first()->country)->toBe('Test Country');
+});
+
+test('organization address can be updated', function () {
+    $organization = Organization::factory()->create();
+
+    $addressService = app(AddressService::class);
+
+    $addressService->saveAddress($organization, [
+        'street' => '123 Main St',
+        'city' => 'Test City',
+        'state' => 'Test State',
+        'zip_code' => '12345',
+        'country' => 'Test Country',
+    ]);
+
+    $addressService->saveAddress($organization, [
+        'street' => '456 Elm St',
+        'city' => 'Updated City',
+        'state' => 'Updated State',
+        'zip_code' => '67890',
+        'country' => 'Updated Country',
+    ]);
+
+    $organization->refresh();
+
+    expect($organization->addresses)->not->toBe(null)
+        ->and($organization->addresses)->toHaveCount(1)
+        ->and($organization->addresses->first())->toBeInstanceOf(Address::class)
+        ->and($organization->addresses->first()->street)->toBe('456 Elm St')
+        ->and($organization->addresses->first()->city)->toBe('Updated City')
+        ->and($organization->addresses->first()->state)->toBe('Updated State')
+        ->and($organization->addresses->first()->zip_code)->toBe('67890')
+        ->and($organization->addresses->first()->country)->toBe('Updated Country');
 });
