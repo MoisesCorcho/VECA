@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Organization extends Model
 {
     /** @use HasFactory<\Database\Factories\OrganizationFactory> */
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $fillable = [
         'name',
@@ -19,4 +21,9 @@ class Organization extends Model
         'email',
         'user_id',
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 }
