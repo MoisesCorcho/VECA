@@ -18,6 +18,7 @@ class Visit extends Model
         'status',
         'organization_id',
         'user_id',
+        'non_visit_reason_id',
     ];
 
     public function organization(): BelongsTo
@@ -28,5 +29,10 @@ class Visit extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function nonVisitReason(): BelongsTo
+    {
+        return $this->belongsTo(NoVisitReason::class, 'non_visit_reason_id');
     }
 }
