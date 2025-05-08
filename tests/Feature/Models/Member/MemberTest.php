@@ -2,6 +2,7 @@
 
 use App\Enums\DniType;
 use App\Models\Member;
+use App\Models\Address;
 use App\Models\Organization;
 use App\Models\MemberPosition;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -156,4 +157,23 @@ test('member dni must be unique', function () {
     expect(function () use ($member1) {
         Member::factory()->create(['dni' => $member1->dni]);
     })->toThrow(Exception::class);
+});
+
+test('member can have an address associated', function () {
+    $member = Member::factory()->create();
+
+    $member->addresses()->create([
+        'street' => '123 Main St',
+        'city' => 'Anytown',
+        'state' => 'CA',
+        'country' => 'USA',
+        'zip_code' => '12345',
+    ]);
+
+    expect($member->addresses->first())->toBeInstanceOf(Address::class)
+        ->and($member->addresses->first()->street)->toBe('123 Main St')
+        ->and($member->addresses->first()->city)->toBe('Anytown')
+        ->and($member->addresses->first()->state)->toBe('CA')
+        ->and($member->addresses->first()->country)->toBe('USA')
+        ->and($member->addresses->first()->zip_code)->toBe('12345');
 });
