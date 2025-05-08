@@ -17,11 +17,11 @@ return new class extends Migration
             $table->string('first_name');
             $table->string('last_name');
             $table->string('dni_type')->default(DniType::CC->value);
-            $table->string('dni');
+            $table->string('dni')->unique();
             $table->string('cellphone_1')->unique();
-            $table->string('cellphone_2')->unique();
-            $table->string('phone');
-            $table->date('birthdate');
+            $table->string('cellphone_2')->unique()->nullable();
+            $table->string('phone')->nullable();
+            $table->dateTime('birthdate');
             $table->string('email')->unique();
             $table->foreignUuid('organization_id')->constrained();
             $table->foreignId('member_position_id')->constrained();
