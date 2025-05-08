@@ -1,8 +1,9 @@
 <?php
 
+use App\Models\User;
+use App\Models\Member;
 use App\Models\Address;
 use App\Models\Organization;
-use App\Models\User;
 use App\Services\AddressService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -183,4 +184,14 @@ test('organization address can be updated', function () {
         ->and($organization->addresses->first()->state)->toBe('Updated State')
         ->and($organization->addresses->first()->zip_code)->toBe('67890')
         ->and($organization->addresses->first()->country)->toBe('Updated Country');
+});
+
+test('organization can have multiple members', function () {
+    $organization = Organization::factory()->create();
+
+    Member::factory()->count(3)->create([
+        'organization_id' => $organization->id
+    ]);
+
+    expect($organization->members->count())->toBe(3);
 });
