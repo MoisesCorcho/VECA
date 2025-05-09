@@ -14,7 +14,7 @@ class Visit extends Model
     protected $fillable = [
         'visit_date',
         'rescheduled_date',
-        'non_visit_reason',
+        'non_visit_description',
         'status',
         'organization_id',
         'user_id',

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->date('visit_date');
             $table->date('rescheduled_date')->nullable();
-            $table->text('non_visit_reason')->nullable();
+            $table->text('non_visit_description')->nullable();
             $table->string('status')->default(VisitStatusEnum::SCHEDULED->value);
             $table->foreignUuid('organization_id')->constrained();
             $table->foreignId('user_id')->constrained();

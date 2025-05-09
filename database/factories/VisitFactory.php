@@ -23,7 +23,7 @@ class VisitFactory extends Factory
         return [
             'visit_date' => $this->faker->dateTimeBetween('-1 week', '+1 week'),
             'rescheduled_date' => $this->faker->dateTimeBetween('-1 week', '+1 week'),
-            'non_visit_reason' => $this->faker->sentence(),
+            'non_visit_description' => $this->faker->sentence(),
             'status' => $this->faker->randomElement(VisitStatusEnum::cases())->value,
             'organization_id' => Organization::factory(),
             'user_id' => User::factory(),
@@ -37,7 +37,7 @@ class VisitFactory extends Factory
             'visit_date' => $this->faker->dateTimeBetween('-10 day', '-1 day'),
             'rescheduled_date' => null,
             'status' => VisitStatusEnum::VISITED->value,
-            'non_visit_reason' => null,
+            'non_visit_description' => null,
             'non_visit_reason_id' => null,
         ]);
     }
@@ -58,7 +58,7 @@ class VisitFactory extends Factory
             'visit_date' => $this->faker->dateTimeBetween('-2 day', '+10 day'),
             'rescheduled_date' => null,
             'status' => VisitStatusEnum::CANCELED->value,
-            'non_visit_reason' => $this->faker->sentence(),
+            'non_visit_description' => $this->faker->sentence(),
             'non_visit_reason_id' => NoVisitReason::factory(),
         ]);
     }
@@ -69,7 +69,7 @@ class VisitFactory extends Factory
             'visit_date' => $this->faker->dateTimeBetween('+2 day', '+10 day'),
             'rescheduled_date' => null,
             'status' => VisitStatusEnum::SCHEDULED->value,
-            'non_visit_reason' => null,
+            'non_visit_description' => null,
             'non_visit_reason_id' => null,
         ]);
     }
@@ -80,7 +80,7 @@ class VisitFactory extends Factory
             'visit_date' => $this->faker->dateTimeBetween('+2 day', '+10 day'),
             'rescheduled_date' => $this->faker->dateTimeBetween('+2 day', '+10 day'),
             'status' => VisitStatusEnum::RESCHEDULED->value,
-            'non_visit_reason' => null,
+            'non_visit_description' => null,
             'non_visit_reason_id' => null,
         ]);
     }
