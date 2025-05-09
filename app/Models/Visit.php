@@ -21,6 +21,14 @@ class Visit extends Model
         'non_visit_reason_id',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'visit_date' => 'datetime',
+            'rescheduled_date' => 'datetime',
+        ];
+    }
+
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);
