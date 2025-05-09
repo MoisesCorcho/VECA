@@ -17,9 +17,9 @@ class NoVisitReasonFactory extends Factory
     public function definition(): array
     {
         $reasons = [
-            'name' => 'No available client',
-            'name' => 'Change of route.',
-            'name' => 'Work office',
+            'No available client',
+            'Change of route',
+            'Work office',
         ];
 
         return [
