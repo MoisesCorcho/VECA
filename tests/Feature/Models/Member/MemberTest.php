@@ -87,13 +87,13 @@ test('can create a member', function () {
 
     expect($member->first_name)->toBe('John')
         ->and($member->last_name)->toBe('Doe')
-        ->and($member->dni_type)->toBe(DniType::CC->value)
+        ->and($member->dni_type)->toBe(DniType::CC)
         ->and($member->dni)->toBe('12345678')
         ->and($member->cellphone_1)->toBe('123456789')
         ->and($member->cellphone_2)->toBe('987654321')
         ->and($member->email)->toBe('john@example.com')
         ->and($member->phone)->toBe('+1234567890')
-        ->and($member->birthdate)->toBe('1990-01-01')
+        ->and($member->birthdate->toDateString())->toBe('1990-01-01')
         ->and($member->organization_id)->toBe($organization->id)
         ->and($member->member_position_id)->toBe($position->id);
 });

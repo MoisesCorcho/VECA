@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\DniType;
 use App\Traits\AddressTrait;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,6 +27,14 @@ class Member extends Model
         'organization_id',
         'member_position_id',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'birthdate' => 'datetime',
+            'dni_type' => DniType::class,
+        ];
+    }
 
     public function organization(): BelongsTo
     {
