@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::table('visits', function (Blueprint $table) {
             $table->foreignId('non_visit_reason_id')
-                ->constrained('no_visit_reasons')
-                ->nullable();
+                ->nullable()
+                ->constrained('no_visit_reasons');
         });
     }
 
