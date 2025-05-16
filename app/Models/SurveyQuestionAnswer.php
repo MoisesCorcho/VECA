@@ -15,4 +15,11 @@ class SurveyQuestionAnswer extends Model
         'survey_question_id',
         'survey_answer_id'
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'answer' => 'array',
+        ];
+    }
 }
