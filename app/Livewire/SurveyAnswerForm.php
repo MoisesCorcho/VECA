@@ -10,7 +10,6 @@ use App\Enums\SurveyQuestionsTypeEnum;
 
 class SurveyAnswerForm extends Component
 {
-    public $id;
     public Survey $survey;
     public array $answers = [];
 
@@ -51,6 +50,8 @@ class SurveyAnswerForm extends Component
     {
         $this->reestructureCheckboxAnswers();
         $this->validate();
+
+        dd($this->answers);
 
         $savedAnswer = $this->survey->answers()->create([
             'date' => now(),

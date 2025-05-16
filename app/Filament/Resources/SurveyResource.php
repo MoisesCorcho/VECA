@@ -9,9 +9,11 @@ use Filament\Forms\Get;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use App\Enums\SurveyQuestionsTypeEnum;
+use App\Filament\Pages\SurveyResponse;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Repeater;
 use Filament\Tables\Columns\TextColumn;
@@ -63,12 +65,15 @@ class SurveyResource extends Resource
                                                     ->required(),
                                             )
                                             ->addActionLabel('Add Option')
-                                            ->reorderable(false),
+                                            ->reorderable(true)
+                                            ->reorderableWithButtons(),
                                     ])
                                     ->visible(fn(Get $get): bool => !in_array($get('type'), SurveyQuestionsTypeEnum::nonOptionsTypes()) && !empty($get('type')))
                             ])
                             ->addActionLabel('Add Question')
-                            ->reorderable(false)
+                            ->cloneable()
+                            ->reorderable(true)
+                            ->reorderableWithButtons()
                             ->columns(2)
                     ]),
             ]);
@@ -90,6 +95,12 @@ class SurveyResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Action::make('response')
+                    ->icon('heroicon-m-x-mark')
+                    ->color('warning')
+                    ->action(function (Survey $record) {
+                        return redirect()->to(SurveyResponse::getUrlWithSurvey($record));
+                    })
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
