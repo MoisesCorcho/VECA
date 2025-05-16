@@ -1,22 +1,14 @@
-<select
-    {{ $attributes->class([
-        'w-full',
-        'rounded',
-        'py-3',
-        'px-[14px]',
-        'text-base',
-        'text-body-color',
-        'border',
-        'border-[#f0f0f0]',
-        'bg-white',
-        'outline-none',
-        'focus-visible:shadow-none',
-        'focus:border-primary',
-        'dark:bg-gray-800',
-        'dark:text-gray-100',
-        'dark:border-gray-700',
-        'dark:focus:border-primary',
-    ]) }}>
-    <option value="">{{ __('Select an option') }}</option>
-    {{ $slot }}
-</select>
+@props(['question'])
+
+<x-filament::input.wrapper class="w-full">
+    <x-filament::input.select 
+        wire:model.live="answers.{{ $question->id }}" 
+        class="w-full">
+        <option value="">{{ __('Select an option') }}</option>
+        @foreach ($question->data ?? [] as $optionValue => $optionLabel)
+            <option value="{{ $optionLabel }}">
+                {{ $optionLabel }}
+            </option>
+        @endforeach
+    </x-filament::input.select>
+</x-filament::input.wrapper>

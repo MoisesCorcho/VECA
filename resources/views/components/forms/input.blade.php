@@ -1,24 +1,9 @@
-<input
-    type="text"
-    {{
-        $attributes->class([
-            'w-full',
-            'rounded',
-            'py-3',
-            'px-[14px]',
-            'text-base',
-            'text-body-color',
-            'border',
-            'border-[#f0f0f0]',
-            'bg-white',
-            'outline-none',
-            'focus-visible:shadow-none',
-            'focus:border-primary',
-            'dark:bg-gray-800',
-            'dark:text-gray-100',
-            'dark:placeholder-gray-400',
-            'dark:border-gray-700',
-            'dark:focus:border-primary',
-        ])
-    }}
-/>
+@props(['question', 'type'])
+
+<x-filament::input.wrapper class="w-full">
+    <x-filament::input
+        type="{{ $type ?? 'text' }}"
+        wire:model.live="answers.{{ $question->id }}"
+        class="w-full"
+        placeholder="Put your answer here..." />
+</x-filament::input.wrapper>

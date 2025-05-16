@@ -1,3 +1,5 @@
+@props(['question'])
+
 <textarea
     {{
         $attributes->class([
@@ -20,4 +22,8 @@
             'dark:focus:border-primary',
         ])
     }}
+    wire:model.live="answers.{{ $question->id }}" 
+    class="w-full text-sm"
+    placeholder="Put your answer here..." 
+    rows="4"
 ></textarea>
