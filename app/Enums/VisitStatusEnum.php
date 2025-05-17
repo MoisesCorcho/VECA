@@ -11,7 +11,7 @@ enum VisitStatusEnum: string
     case CANCELED    = 'canceled';
     case RESCHEDULED = 'rescheduled';
 
-    public static function label()
+    public function label()
     {
         return match ($this) {
             self::SCHEDULED => __('Scheduled'),
