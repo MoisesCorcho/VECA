@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use App\Models\Organization;
 use Illuminate\Notifications\Notifiable;
 use Filament\Models\Contracts\FilamentUser;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -68,6 +69,18 @@ class User extends Authenticatable implements FilamentUser
             ->explode(' ')
             ->map(fn(string $name) => Str::of($name)->substr(0, 1))
             ->implode('');
+    }
+
+    protected function fullName(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+
+                if (empty($this->last_name)) return $this->name;
+
+                return $this->name . ' ' . $this->last_name;
+            },
+        );
     }
 
     public function organizations(): HasMany
