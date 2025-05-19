@@ -55,7 +55,7 @@ class UserResource extends Resource
                 // Contact Information
                 Forms\Components\Section::make('Contact Information')
                     ->description('Communication details')
-                    ->collapsed()
+                    ->collapsible()
                     ->schema([
                         Forms\Components\TextInput::make('email')
                             ->label('Email')
