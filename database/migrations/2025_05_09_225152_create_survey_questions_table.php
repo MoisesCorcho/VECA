@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('question')->comment('Question title');
             $table->text('description')->nullable()->comment('Question description');
             $table->text('data')->nullable()->comment('Question data/options');
-            $table->foreignIdFor(Survey::class, 'survey_id');
+            $table->foreignIdFor(Survey::class, 'survey_id')->constrained();
             $table->timestamps();
         });
     }
