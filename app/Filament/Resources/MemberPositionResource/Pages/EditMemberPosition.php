@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\MemberPositionResource\Pages;
 
-use App\Filament\Resources\MemberPositionResource;
 use Filament\Actions;
+use App\Helpers\FilamentHelpers;
 use Filament\Resources\Pages\EditRecord;
+use App\Filament\Resources\MemberPositionResource;
 
 class EditMemberPosition extends EditRecord
 {
@@ -13,7 +14,14 @@ class EditMemberPosition extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->before(function ($record) {
+                    FilamentHelpers::preventDeletionIfHasRelated(
+                        $record,
+                        'members',
+                        fn() => $this->halt()
+                    );
+                }),
         ];
     }
 }
