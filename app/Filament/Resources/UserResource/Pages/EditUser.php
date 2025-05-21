@@ -14,7 +14,8 @@ class EditUser extends EditRecord
     {
         return [
             Actions\ViewAction::make(),
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->preventDeletionWithRelated('organizations'),
         ];
     }
 }

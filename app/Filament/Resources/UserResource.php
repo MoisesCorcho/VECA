@@ -140,6 +140,7 @@ class UserResource extends Resource
                     Tables\Actions\DeleteAction::make()
                         ->color('danger')
                         ->requiresConfirmation()
+                        ->preventDeletionWithRelated('organizations'),
                 ])
             ])
             ->bulkActions([
