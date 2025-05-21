@@ -7,13 +7,15 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\Organization;
+use App\Helpers\FilamentHelpers;
 use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\OrganizationResource\Pages;
 use App\Filament\Resources\OrganizationResource\RelationManagers;
-use App\Filament\Resources\OrganizationResource\RelationManagers\AddressesRelationManager;
 use App\Filament\Resources\OrganizationResource\RelationManagers\MembersRelationManager;
+use App\Filament\Resources\OrganizationResource\RelationManagers\AddressesRelationManager;
+use Filament\Support\Exceptions\Halt;
 
 class OrganizationResource extends Resource
 {
@@ -136,6 +138,13 @@ class OrganizationResource extends Resource
                     Tables\Actions\DeleteAction::make()
                         ->color('danger')
                         ->requiresConfirmation()
+                        ->before(function ($record) {
+                            FilamentHelpers::preventDeletionIfHasRelated(
+                                $record,
+                                'members',
+                                fn() => throw new Halt()
+                            );
+                        })
                 ])
             ])
             ->bulkActions([
