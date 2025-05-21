@@ -5,6 +5,7 @@ namespace App\Filament\Resources\OrganizationResource\Pages;
 use App\Filament\Resources\OrganizationResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+use App\Helpers\FilamentHelpers;
 
 class EditOrganization extends EditRecord
 {
@@ -14,7 +15,14 @@ class EditOrganization extends EditRecord
     {
         return [
             Actions\ViewAction::make(),
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->before(function ($record) {
+                    FilamentHelpers::preventDeletionIfHasRelated(
+                        $record,
+                        'members',
+                        fn() => $this->halt()
+                    );
+                }),
         ];
     }
 }
