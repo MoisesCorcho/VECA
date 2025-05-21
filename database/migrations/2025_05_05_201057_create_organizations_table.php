@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('cellphone')->unique();
             $table->string('phone');
             $table->string('email')->unique();
-            $table->foreignId('user_id')->constrained();
+            $table->foreignId('user_id')->nullable()->constrained();
             $table->timestamps();
         });
     }
