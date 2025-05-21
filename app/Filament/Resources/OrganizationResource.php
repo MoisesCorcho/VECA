@@ -138,13 +138,7 @@ class OrganizationResource extends Resource
                     Tables\Actions\DeleteAction::make()
                         ->color('danger')
                         ->requiresConfirmation()
-                        ->before(function ($record) {
-                            FilamentHelpers::preventDeletionIfHasRelated(
-                                $record,
-                                'members',
-                                fn() => throw new Halt()
-                            );
-                        })
+                        ->preventDeletionWithRelated('members')
                 ])
             ])
             ->bulkActions([

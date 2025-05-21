@@ -16,13 +16,7 @@ class EditOrganization extends EditRecord
         return [
             Actions\ViewAction::make(),
             Actions\DeleteAction::make()
-                ->before(function ($record) {
-                    FilamentHelpers::preventDeletionIfHasRelated(
-                        $record,
-                        'members',
-                        fn() => $this->halt()
-                    );
-                }),
+                ->preventDeletionWithRelated('members'),
         ];
     }
 }

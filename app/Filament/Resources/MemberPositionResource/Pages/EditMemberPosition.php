@@ -15,13 +15,7 @@ class EditMemberPosition extends EditRecord
     {
         return [
             Actions\DeleteAction::make()
-                ->before(function ($record) {
-                    FilamentHelpers::preventDeletionIfHasRelated(
-                        $record,
-                        'members',
-                        fn() => $this->halt()
-                    );
-                }),
+                ->preventDeletionWithRelated('members'),
         ];
     }
 }
