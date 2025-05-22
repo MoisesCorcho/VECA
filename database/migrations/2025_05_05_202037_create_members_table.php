@@ -23,8 +23,6 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->dateTime('birthdate');
             $table->string('email')->unique();
-            $table->foreignUuid('organization_id')->constrained();
-            $table->foreignId('member_position_id')->constrained();
             $table->timestamps();
         });
     }
