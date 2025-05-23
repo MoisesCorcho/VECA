@@ -20,6 +20,7 @@ use Filament\Forms\Components\Placeholder;
 use Illuminate\Support\HtmlString;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
+use App\Helpers\Filament\CommonColumns;
 
 class UserResource extends Resource
 {
@@ -121,15 +122,14 @@ class UserResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('full_name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('email')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('cellphone')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('dni_type')
-                    ->searchable(),
+                    ->searchable(['name', 'last_name'])
+                    ->sortable(),
+                CommonColumns::email(),
+                CommonColumns::cellphone(),
+                CommonColumns::dniType(),
                 Tables\Columns\TextColumn::make('dni')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\ToggleColumn::make('active')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('visits_per_day')
