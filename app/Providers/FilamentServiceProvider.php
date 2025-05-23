@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use App\Helpers\FilamentHelpers;
-use Filament\Notifications\Notification;
 use Filament\Actions\DeleteAction as PageDeleteAction;
 use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
 
