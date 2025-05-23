@@ -13,6 +13,13 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\Wizard\Step;
+use Filament\Forms\Components\CheckboxList;
+use App\Models\Organization;
+use Filament\Forms\Components\Placeholder;
+use Illuminate\Support\HtmlString;
+use Filament\Forms\Get;
+use Filament\Notifications\Notification;
 
 class UserResource extends Resource
 {
@@ -72,7 +79,8 @@ class UserResource extends Resource
                             ->label('Phone Number')
                             ->tel()
                             ->prefix('+')
-                            ->placeholder('Enter number without spaces'),
+                            ->placeholder('Enter number without spaces')
+                            ->regex('/^[+\d\s()-]+$/'),
                     ]),
 
                 // Account Settings
@@ -133,6 +141,79 @@ class UserResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('manageOrganizations')
+                        ->icon('heroicon-o-home-modern')
+                        ->label('Manage Organizations')
+                        ->color('secondary')
+                        ->mountUsing(function (Form $form, User $record) {
+                            $form->fill([
+                                'organizations' => $record->organizations->pluck('id')->toArray(),
+                            ]);
+                        })
+                        ->steps([
+                            Step::make('Select Organization')
+                                ->schema([
+                                    CheckboxList::make('organizations')
+                                        ->options(Organization::query()->pluck('name', 'id'))
+                                        ->columns(4)
+                                        ->searchable()
+                                        ->bulkToggleable(),
+                                ]),
+                            Step::make('Review Changes')
+                                ->schema([
+                                    Placeholder::make('warning')
+                                        ->content(function (Get $get): HtmlString {
+                                            $selectedOrganizations = $get('organizations') ?? [];
+
+                                            $affectedUsers = User::query()
+                                                ->whereHas('organizations', function ($query) use ($selectedOrganizations) {
+                                                    $query->whereIn('organizations.id', $selectedOrganizations);
+                                                })
+                                                ->get();
+
+                                            $orgs = Organization::whereIn('id', $selectedOrganizations)->pluck('name')->toArray();
+
+                                            $orgList = '';
+                                            foreach ($orgs as $orgName) {
+                                                $orgList .= '<li>' . e($orgName) . '</li>';
+                                            }
+
+                                            $userList = '';
+                                            foreach ($affectedUsers as $user) {
+                                                $userList .= '<li>' . e($user->full_name) . '</li>';
+                                            }
+
+                                            return new HtmlString(
+                                                '<div class="text-warning-500 font-bold">Please be extremely careful with this action!</div>' .
+                                                    '<p class="mt-2">By confirming, the following will occur:</p>' .
+                                                    '<ul class="list-disc list-inside pl-6 mt-1">' .
+                                                    '<li>All currently selected organizations will be <span class="font-semibold text-warning-500">disassociated</span> from their existing sellers.</li>' .
+                                                    '<li>These selected organizations will then be <span class="font-semibold text-primary-500">assigned</span> to the current seller.</li>' .
+                                                    '</ul>' .
+                                                    '<p class="mt-2">You selected the following organizations:</p>' .
+                                                    '<ul class="list-disc list-inside pl-8 text-sm text-gray-500">' .
+                                                    $orgList .
+                                                    '</ul>' .
+                                                    '<p class="mt-2 text-warning-700">This change will affect the following sellers:</p>' .
+                                                    '<ul class="list-disc list-inside pl-8 text-sm text-gray-500">' .
+                                                    $userList .
+                                                    '</ul>' .
+                                                    '<p class="mt-2 text-warning-700 font-semibold">Proceed with extreme caution!</p>'
+                                            );
+                                        })
+                                        ->columnSpanFull(),
+                                ]),
+                        ])
+                        ->action(function (array $data, User $record): void {
+                            Organization::query()->where('user_id', $record->id)->update(['user_id' => null]);
+                            Organization::query()->whereIn('id', $data['organizations'])->update(['user_id' => $record->id]);
+
+                            Notification::make()
+                                ->title('Organizations successfully assigned!')
+                                ->success()
+                                ->send();
+                        })
+                        ->slideOver(),
                     Tables\Actions\ViewAction::make()
                         ->color('info'),
                     Tables\Actions\EditAction::make()
