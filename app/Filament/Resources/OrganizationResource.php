@@ -7,7 +7,6 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\Organization;
-use App\Helpers\FilamentHelpers;
 use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -15,7 +14,7 @@ use App\Filament\Resources\OrganizationResource\Pages;
 use App\Filament\Resources\OrganizationResource\RelationManagers;
 use App\Filament\Resources\OrganizationResource\RelationManagers\MembersRelationManager;
 use App\Filament\Resources\OrganizationResource\RelationManagers\AddressesRelationManager;
-use Filament\Support\Exceptions\Halt;
+use Filament\Tables\Filters\Filter;
 
 class OrganizationResource extends Resource
 {
@@ -51,8 +50,7 @@ class OrganizationResource extends Resource
                                     ->relationship('user', 'name')
                                     ->label('Assigned to Seller')
                                     ->searchable()
-                                    ->preload()
-                                    ->required(),
+                                    ->preload(),
                             ]),
                         Forms\Components\Textarea::make('description')
                             ->label('Description')
@@ -127,7 +125,11 @@ class OrganizationResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Filter::make('assignedStatus')
+                    ->label(__('Organizations without seller'))
+                    ->query(function (Builder $query) {
+                        return $query->where('user_id', null);
+                    }),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
