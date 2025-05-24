@@ -19,7 +19,7 @@ class CommonColumns
      * @param string $label      The label for the column.
      * @return TextColumn
      */
-    protected static function baseTextColumn(string $fieldName, string $label): TextColumn
+    public static function baseTextColumn(string $fieldName, string $label): TextColumn
     {
         return TextColumn::make($fieldName)
             ->label(__($label))
@@ -37,7 +37,7 @@ class CommonColumns
      * @param string $copyMessage The message displayed upon copying.
      * @return TextColumn
      */
-    protected static function baseIconCopyableTextColumn(
+    public static function baseIconCopyableTextColumn(
         string $fieldName,
         string $label,
         string $iconName,
@@ -48,40 +48,6 @@ class CommonColumns
             ->copyable()
             ->copyMessage(__($copyMessage))
             ->copyMessageDuration(1500);
-    }
-
-    public static function cellphone(string $fieldName = 'cellphone'): TextColumn
-    {
-        return static::baseIconCopyableTextColumn(
-            $fieldName,
-            'Cellphone',
-            'heroicon-o-phone'
-        );
-    }
-
-    public static function email(string $fieldName = 'email'): TextColumn
-    {
-        return static::baseIconCopyableTextColumn(
-            $fieldName,
-            'Email',
-            'heroicon-o-envelope'
-        );
-    }
-
-    public static function dniType(string $fieldName = 'dni_type'): TextColumn
-    {
-        return static::baseTextColumn($fieldName, 'ID Type')
-            ->badge();
-    }
-
-    public static function dni(string $fieldName = 'dni', string $label = 'ID Number'): TextColumn
-    {
-        return static::baseIconCopyableTextColumn(
-            $fieldName,
-            $label,
-            'heroicon-o-identification',
-            'DNI Copied!'
-        );
     }
 
     public static function createdAt(): TextColumn
