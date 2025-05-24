@@ -15,6 +15,7 @@ use App\Filament\Resources\OrganizationResource\RelationManagers;
 use App\Filament\Resources\OrganizationResource\RelationManagers\MembersRelationManager;
 use App\Filament\Resources\OrganizationResource\RelationManagers\AddressesRelationManager;
 use Filament\Tables\Filters\Filter;
+use App\Helpers\Filament\CommonColumns;
 
 class OrganizationResource extends Resource
 {
@@ -101,28 +102,16 @@ class OrganizationResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('nit')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('cellphone')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('phone')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('email')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('user.name')
-                    ->label('Assigned to')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->date('Y-m-d')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->since()
-                    ->dateTimeTooltip()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                CommonColumns::baseTextColumn('name', 'Name'),
+                CommonColumns::baseIconCopyableTextColumn('nit', 'NIT', 'heroicon-o-identification'),
+                CommonColumns::baseIconCopyableTextColumn('cellphone', 'Cellphone', 'heroicon-o-phone'),
+                CommonColumns::baseIconCopyableTextColumn('phone', 'Phone', 'heroicon-o-phone'),
+                CommonColumns::baseIconCopyableTextColumn('email', 'Email', 'heroicon-o-envelope'),
+                CommonColumns::baseTextColumn('user.name', 'Assigned to'),
+                CommonColumns::createdAt()
+                    ->label('Registered On'),
+                CommonColumns::updatedAt()
+                    ->label('Last Updated'),
             ])
             ->filters([
                 Filter::make('assignedStatus')

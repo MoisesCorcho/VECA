@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Actions\BulkActionGroup;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\RelationManagers\RelationManager;
+use App\Helpers\Filament\CommonColumns;
 
 class MembersRelationManager extends RelationManager
 {
@@ -143,40 +144,15 @@ class MembersRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('full_name')
             ->columns([
-                TextColumn::make('full_name')
-                    ->label('Full Name')
-                    ->searchable(['first_name', 'last_name'])
-                    ->sortable()
-                    ->toggleable(),
+                CommonColumns::baseTextColumn('full_name', 'Full Name')
+                    ->searchable(['first_name', 'last_name']),
 
-                TextColumn::make('dni_type')
-                    ->label('ID Type')
-                    ->badge()
-                    ->toggleable(),
-
-                TextColumn::make('dni')
-                    ->label('ID Number')
-                    ->searchable()
-                    ->toggleable(),
-
-                TextColumn::make('email')
-                    ->label('Email')
-                    ->searchable()
-                    ->sortable()
-                    ->copyable()
-                    ->toggleable(),
-
-                TextColumn::make('cellphone_1')
-                    ->label('Mobile Phone')
-                    ->searchable()
-                    ->copyable()
-                    ->toggleable(),
-
-                TextColumn::make('memberPosition.name')
-                    ->label('Position')
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(),
+                CommonColumns::baseTextColumn('dni_type', 'ID Type')
+                    ->badge(),
+                CommonColumns::baseIconCopyableTextColumn('dni', 'ID Number', 'heroicon-o-identification'),
+                CommonColumns::baseIconCopyableTextColumn('email', 'Email Address', 'heroicon-o-envelope'),
+                CommonColumns::baseIconCopyableTextColumn('cellphone_1', 'Cellphone', 'heroicon-o-phone'),
+                CommonColumns::baseTextColumn('memberPosition.name', 'Position'),
 
                 TextColumn::make('birthdate')
                     ->label('Birth Date')
@@ -184,19 +160,11 @@ class MembersRelationManager extends RelationManager
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                TextColumn::make('created_at')
-                    ->label('Registered On')
-                    ->dateTime('M d, Y - H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                TextColumn::make('updated_at')
-                    ->label('Last Updated')
-                    ->dateTime('M d, Y - H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                CommonColumns::createdAt()
+                    ->label('Registered On'),
+                CommonColumns::updatedAt()
+                    ->label('Last Updated'),
             ])
-
             ->filters([
                 SelectFilter::make('member_position_id')
                     ->relationship('memberPosition', 'name')

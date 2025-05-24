@@ -121,20 +121,26 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('full_name')
-                    ->searchable(['name', 'last_name'])
-                    ->sortable(),
-                CommonColumns::email(),
-                CommonColumns::cellphone(),
-                CommonColumns::dniType(),
-                Tables\Columns\TextColumn::make('dni')
-                    ->searchable()
-                    ->sortable(),
+                CommonColumns::baseTextColumn('full_name', 'Full Name')
+                    ->searchable(['first_name', 'last_name']),
+
+                CommonColumns::baseIconCopyableTextColumn('email', 'Email Address', 'heroicon-o-envelope'),
+                CommonColumns::baseIconCopyableTextColumn('cellphone', 'Cellphone', 'heroicon-o-phone'),
+                CommonColumns::baseTextColumn('dni_type', 'ID Type')
+                    ->badge(),
+
+                CommonColumns::baseIconCopyableTextColumn('dni', 'ID Number', 'heroicon-o-identification'),
                 Tables\Columns\ToggleColumn::make('active')
                     ->sortable(),
+
                 Tables\Columns\TextColumn::make('visits_per_day')
                     ->numeric()
                     ->sortable(),
+
+                CommonColumns::createdAt()
+                    ->label('Registered On'),
+                CommonColumns::updatedAt()
+                    ->label('Last Updated'),
             ])
             ->filters([
                 //
@@ -226,7 +232,7 @@ class UserResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    //
                 ]),
             ])
             ->striped()

@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Helpers\Filament\CommonColumns;
 
 class MemberPositionResource extends Resource
 {
@@ -43,18 +44,12 @@ class MemberPositionResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('description')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                CommonColumns::baseTextColumn('name', 'Name'),
+                CommonColumns::baseTextColumn('description', 'Description'),
+                CommonColumns::createdAt()
+                    ->label('Registered On'),
+                CommonColumns::updatedAt()
+                    ->label('Last Updated'),
             ])
             ->filters([
                 //
