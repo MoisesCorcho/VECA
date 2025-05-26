@@ -21,6 +21,7 @@ use Illuminate\Support\HtmlString;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use App\Helpers\Filament\CommonColumns;
+use App\Helpers\Filament\CommonFormInputs;
 
 class UserResource extends Resource
 {
@@ -59,9 +60,7 @@ class UserResource extends Resource
                                     ->label('ID Type')
                                     ->options(DniType::keyValuesCombined())
                                     ->searchable(),
-                                Forms\Components\TextInput::make('dni')
-                                    ->label('ID Number')
-                                    ->maxLength(20),
+                                CommonFormInputs::identificationNumber('dni', 'ID Number', 'Enter ID number'),
                             ]),
                     ]),
 
@@ -70,18 +69,8 @@ class UserResource extends Resource
                     ->description('Communication details')
                     ->collapsible()
                     ->schema([
-                        Forms\Components\TextInput::make('email')
-                            ->label('Email')
-                            ->email()
-                            ->required()
-                            ->autocomplete()
-                            ->placeholder('example@domain.com'),
-                        Forms\Components\TextInput::make('cellphone')
-                            ->label('Phone Number')
-                            ->tel()
-                            ->prefix('+')
-                            ->placeholder('Enter number without spaces')
-                            ->regex('/^[+\d\s()-]+$/'),
+                        CommonFormInputs::email('email', 'Email', 'example@domain'),
+                        CommonFormInputs::phoneNumber('cellphone', 'Phone Number', 'Enter phone number'),
                     ]),
 
                 // Account Settings
@@ -122,7 +111,7 @@ class UserResource extends Resource
         return $table
             ->columns([
                 CommonColumns::baseTextColumn('full_name', 'Full Name')
-                    ->searchable(['first_name', 'last_name']),
+                    ->searchable(['name', 'last_name']),
 
                 CommonColumns::baseIconCopyableTextColumn('email', 'Email Address', 'heroicon-o-envelope'),
                 CommonColumns::baseIconCopyableTextColumn('cellphone', 'Cellphone', 'heroicon-o-phone'),

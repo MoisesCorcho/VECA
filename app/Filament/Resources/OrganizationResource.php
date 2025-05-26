@@ -16,6 +16,7 @@ use App\Filament\Resources\OrganizationResource\RelationManagers\MembersRelation
 use App\Filament\Resources\OrganizationResource\RelationManagers\AddressesRelationManager;
 use Filament\Tables\Filters\Filter;
 use App\Helpers\Filament\CommonColumns;
+use App\Helpers\Filament\CommonFormInputs;
 
 class OrganizationResource extends Resource
 {
@@ -66,32 +67,14 @@ class OrganizationResource extends Resource
                     ->schema([
                         Forms\Components\Grid::make()
                             ->schema([
-                                Forms\Components\TextInput::make('nit')
-                                    ->label('NIT')
-                                    ->placeholder('Enter identification number')
-                                    ->required(),
-
-                                Forms\Components\TextInput::make('email')
-                                    ->label('Email Address')
-                                    ->email()
-                                    ->required()
-                                    ->unique(ignoreRecord: true)
-                                    ->placeholder('contact@organization.com'),
+                                CommonFormInputs::identificationNumber('nit', 'NIT', 'Enter identification number'),
+                                CommonFormInputs::email('email', 'Email Address', 'contact@organization.com'),
                             ]),
 
                         Forms\Components\Grid::make()
                             ->schema([
-                                Forms\Components\TextInput::make('cellphone')
-                                    ->label('Mobile Phone')
-                                    ->tel()
-                                    ->required()
-                                    ->placeholder('+1 (555) 000-0000'),
-
-                                Forms\Components\TextInput::make('phone')
-                                    ->label('Office Phone')
-                                    ->tel()
-                                    ->required()
-                                    ->placeholder('+1 (555) 000-0000'),
+                                CommonFormInputs::phoneNumber('cellphone', 'Mobile Phone', 'Enter phone number'),
+                                CommonFormInputs::phoneNumber('phone', 'Office Phone', 'Enter phone number'),
                             ])
                     ]),
 

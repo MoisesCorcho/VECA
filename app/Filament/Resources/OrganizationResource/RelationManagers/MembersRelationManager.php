@@ -23,6 +23,7 @@ use Filament\Tables\Actions\BulkActionGroup;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\RelationManagers\RelationManager;
 use App\Helpers\Filament\CommonColumns;
+use App\Helpers\Filament\CommonFormInputs;
 
 class MembersRelationManager extends RelationManager
 {
@@ -57,13 +58,7 @@ class MembersRelationManager extends RelationManager
                                     ->default('CC')
                                     ->required(),
 
-                                TextInput::make('dni')
-                                    ->label('ID Number')
-                                    ->required()
-                                    ->unique(ignoreRecord: true)
-                                    ->placeholder('1234567890')
-                                    ->maxLength(20)
-                                    ->numeric(),
+                                CommonFormInputs::identificationNumber('dni', 'ID Number', 'Enter ID number'),
                             ]),
 
                         Grid::make(2)
@@ -75,13 +70,7 @@ class MembersRelationManager extends RelationManager
                                     ->beforeOrEqual(now()->subYears(18))
                                     ->placeholder('Select date'),
 
-                                TextInput::make('email')
-                                    ->label('Email Address')
-                                    ->email()
-                                    ->required()
-                                    ->unique(ignoreRecord: true)
-                                    ->placeholder('john.doe@example.com')
-                                    ->maxLength(255),
+                                CommonFormInputs::email('email', 'Email Address', 'john.doe@example.com'),
                             ]),
                     ]),
 
@@ -89,31 +78,12 @@ class MembersRelationManager extends RelationManager
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                TextInput::make('cellphone_1')
-                                    ->label('Primary Mobile Phone')
-                                    ->tel()
-                                    ->required()
-                                    ->unique(ignoreRecord: true)
-                                    ->placeholder('+1 (555) 000-0000')
-                                    ->maxLength(20)
-                                    ->regex('/^[+\d\s()-]+$/'),
-
-                                TextInput::make('cellphone_2')
-                                    ->label('Secondary Mobile Phone')
-                                    ->tel()
-                                    ->placeholder('+1 (555) 000-0000')
-                                    ->unique(ignoreRecord: true)
-                                    ->maxLength(20)
-                                    ->regex('/^[+\d\s()-]+$/')
+                                CommonFormInputs::phoneNumber('cellphone_1', 'Primary Mobile Phone', 'Enter phone number'),
+                                CommonFormInputs::phoneNumber('cellphone_2', 'Secondary Mobile Phone', 'Enter phone number')
                                     ->nullable(),
                             ]),
 
-                        TextInput::make('phone')
-                            ->label('Landline Phone')
-                            ->tel()
-                            ->placeholder('+1 (555) 000-0000')
-                            ->maxLength(20)
-                            ->regex('/^[+\d\s()-]+$/')
+                        CommonFormInputs::phoneNumber('phone', 'Landline Phone', 'Enter phone number')
                             ->nullable(),
                     ]),
 
