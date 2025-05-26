@@ -3,6 +3,8 @@
 namespace App\Helpers\Filament;
 
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use App\Enums\DniType;
 
 /**
  * This class provides common form inputs definitions used in Filament forms.
@@ -82,5 +84,25 @@ class CommonFormInputs
             ->maxLength(20)
             ->placeholder(__($placeholder))
             ->regex('/^[+\d\s()-]+$/');
+    }
+
+    /**
+     * Create a Select component for an ID type.
+     *
+     * @param string $fieldName The name of the field.
+     * @param string $label The label for the input field.
+     *
+     * @return Select The configured Select component.
+     */
+    public static function idTypeSelect(
+        string $fieldName = 'id_type',
+        string $label = 'ID Type',
+    ): Select {
+        return Select::make($fieldName)
+            ->label(__($label))
+            ->options(DniType::keyValuesCombined())
+            ->default(DniType::CC->value)
+            ->searchable()
+            ->required();
     }
 }

@@ -52,12 +52,7 @@ class MembersRelationManager extends RelationManager
 
                         Grid::make(2)
                             ->schema([
-                                Select::make('dni_type')
-                                    ->label('ID Type')
-                                    ->options(DniType::keyValuesCombined())
-                                    ->default('CC')
-                                    ->required(),
-
+                                CommonFormInputs::idTypeSelect('dni_type', 'ID Type'),
                                 CommonFormInputs::identificationNumber('dni', 'ID Number', 'Enter ID number'),
                             ]),
 

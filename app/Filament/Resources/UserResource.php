@@ -56,10 +56,7 @@ class UserResource extends Resource
                         // Identification
                         Forms\Components\Grid::make(2)
                             ->schema([
-                                Forms\Components\Select::make('dni_type')
-                                    ->label('ID Type')
-                                    ->options(DniType::keyValuesCombined())
-                                    ->searchable(),
+                                CommonFormInputs::idTypeSelect('dni_type', 'ID Type'),
                                 CommonFormInputs::identificationNumber('dni', 'ID Number', 'Enter ID number'),
                             ]),
                     ]),
