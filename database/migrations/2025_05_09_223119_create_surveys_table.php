@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('title')->comment('survey title');
             $table->text('description')->nullable()->comment('survey description');
             $table->boolean('status')->comment('survey state, active o inactive');
-            $table->foreignIdFor(User::class, 'user_id')->comment('Foreign key - user who created the survey');
+            $table->foreignIdFor(User::class, 'user_id')->constrained()->comment('Foreign key - user who created the survey');
             $table->softDeletes();
             $table->timestamps();
         });

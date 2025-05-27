@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('survey_answers', function (Blueprint $table) {
             $table->id();
             $table->timestamp('date')->nullable()->comment('date of the answer');
-            $table->foreignIdFor(Survey::class, 'survey_id');
+            $table->foreignIdFor(Survey::class, 'survey_id')->constrained();
             $table->timestamps();
         });
     }
