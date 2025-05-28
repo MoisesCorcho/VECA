@@ -21,4 +21,20 @@ enum VisitStatusEnum: string
             self::RESCHEDULED => __('Rescheduled'),
         };
     }
+
+    public static function keyValuesCombined(): array
+    {
+        return array_combine(
+            array_column(self::cases(), 'value'),
+            array_map(fn($case) => $case->label(), self::cases())
+        );
+    }
+
+    public static function colors()
+    {
+        return array_combine(
+            array_column(self::cases(), 'value'),
+            ['#3788d8', '#10b981', '#ef4444', '#ef4444', '#f59e0b']
+        );
+    }
 }
