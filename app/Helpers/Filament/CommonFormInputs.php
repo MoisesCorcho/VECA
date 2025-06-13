@@ -5,6 +5,7 @@ namespace App\Helpers\Filament;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use App\Enums\DniType;
+use Filament\Forms\Components\Textarea;
 
 /**
  * This class provides common form inputs definitions used in Filament forms.
@@ -104,5 +105,58 @@ class CommonFormInputs
             ->default(DniType::CC->value)
             ->searchable()
             ->required();
+    }
+
+
+    /**
+     * Create a TextInput component for a field that should only be displayed
+     * and not edited.
+     *
+     * @param string $fieldName The name of the field.
+     * @param string $label The label for the input field.
+     * @param \Closure|null $formatter A closure that takes the value of the field and returns its formatted value.
+     *
+     * @return \Filament\Forms\Components\TextInput The configured TextInput component.
+     */
+    public static function displayOnlyTextInput(string $fieldName, string $label, ?callable $formatter = null): TextInput
+    {
+        return TextInput::make($fieldName)
+            ->label(__($label))
+            ->disabled()
+            ->dehydrated(false)
+            ->formatStateUsing($formatter);
+    }
+
+    /**
+     * Create a Textarea component for a field that should only be displayed
+     * and not edited.
+     *
+     * @param string $fieldName The name of the field.
+     * @param string $label The label for the textarea.
+     * @param int $rows The number of rows for the textarea.
+     * @param \Closure|null $formatter A closure that takes the value of the field and returns its formatted value.
+     *
+     * @return \Filament\Forms\Components\Textarea The configured Textarea component.
+     */
+    public static function displayOnlyTextarea(string $fieldName, string $label, int $rows = 2, ?callable $formatter = null): Textarea
+    {
+        return Textarea::make($fieldName)
+            ->label(__($label))
+            ->disabled()
+            ->dehydrated(false)
+            ->rows($rows)
+            ->formatStateUsing($formatter);
+    }
+
+
+    public static function getEntityFormatter(string $entity, string $entityField, string $attribute = 'name'): \Closure
+    {
+        return function (callable $get) use ($entity, $entityField, $attribute) {
+            $entityId = $get($entityField);
+            if ($entityId) {
+                return $entity::find($entityId)?->{$attribute};
+            }
+            return null;
+        };
     }
 }
