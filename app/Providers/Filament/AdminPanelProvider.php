@@ -57,7 +57,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->sidebarCollapsibleOnDesktop()
             ->plugins([
-                FilamentFullCalendarPlugin::make(),
+                FilamentFullCalendarPlugin::make()
+                    ->locale(config('app.locale'))
+                    ->timezone(config('app.timezone')),
             ]);
     }
 }
