@@ -12,6 +12,8 @@ use Saade\FilamentFullCalendar\Data\EventData;
 use Filament\Forms\Components\Section;
 use App\Models\Organization;
 use App\Models\User;
+use App\Helpers\FilamentHelpers;
+use App\Helpers\Filament\CommonFormInputs;
 
 class CalendarWidget extends FullCalendarWidget
 {
@@ -78,25 +80,18 @@ class CalendarWidget extends FullCalendarWidget
                         ->required()
                         ->label(__('Visit Date'))
                         ->default(now())
-                        ->minDate(now()->startOfDay()) // No se pueden agendar citas antes de hoy
-                        ->disabled(function (callable $get, ?Model $record) {
-                            $status = $get('status');
-
-                            // Si estamos creando, solo desactivar cuando esté en RESCHEDULED
-                            if (!$record) {
-                                return $status === 'rescheduled';
-                            }
-
-                            // Si estamos editando, verificar el estado original
-                            $originalStatus = $record->getOriginal('status') ?? $record->status;
-
-                            // Desactivado si el estado original era de los finales O si el estado actual es RESCHEDULED
-                            return in_array($originalStatus, ['visited', 'not-visited', 'canceled']) || $status === 'rescheduled' || !$record->rescheduled_date || in_array($status, ['visited', 'not-visited', 'canceled', '']);
-                        }),
+                        ->minDate(now()->startOfDay())
+                        ->disabled(FilamentHelpers::shouldDisable(
+                            disabledOnOriginalStatuses: ['visited', 'not-visited', 'canceled'],
+                            disabledOnCurrentStatuses: ['visited', 'not-visited', 'canceled', ''],
+                            additionalConditions: [
+                                fn(callable $get) => $get('status') === 'rescheduled'
+                            ]
+                        )),
                     Forms\Components\DatePicker::make('rescheduled_date')
                         ->label(__('Rescheduled Date'))
                         ->nullable()
-                        ->minDate(now()->startOfDay()) // No se pueden agendar citas antes de hoy
+                        ->minDate(now()->startOfDay())
                         ->visible(function (callable $get, ?Model $record) {
                             if ($record) {
                                 return ($record->rescheduled_date || $get('status') === 'rescheduled');
@@ -126,18 +121,9 @@ class CalendarWidget extends FullCalendarWidget
                 })
                 ->default('scheduled')
                 ->required()
-                ->disabled(function (callable $get, ?Model $record) {
-                    // Si estamos creando, nunca desactivar
-                    if (!$record) {
-                        return false;
-                    }
-
-                    // Si estamos editando, verificar el estado original
-                    $originalStatus = $record->getOriginal('status') ?? $record->status;
-
-                    // Desactivado si el estado original era VISITED, NOT_VISITED o CANCELED
-                    return in_array($originalStatus, ['visited', 'not-visited', 'canceled']);
-                }),
+                ->disabled(FilamentHelpers::shouldDisable(
+                    disabledOnOriginalStatuses: ['visited', 'not-visited', 'canceled']
+                )),
 
             Forms\Components\Select::make('organization_id')
                 ->label(__('Organization'))
@@ -164,19 +150,10 @@ class CalendarWidget extends FullCalendarWidget
                     }
                 })
                 ->required()
-                ->disabled(function (callable $get, ?Model $record) {
-                    // Si estamos creando, nunca desactivar
-                    if (!$record) {
-                        return false;
-                    }
-
-                    $actualStatus = $get('status');
-
-                    // Si estamos editando, verificar el estado original
-                    $originalStatus = $record->getOriginal('status') ?? $record->status;
-
-                    return in_array($originalStatus, ['rescheduled']) || in_array($actualStatus, ['visited', 'not-visited', 'canceled', 'rescheduled']);
-                }),
+                ->disabled(FilamentHelpers::shouldDisable(
+                    disabledOnOriginalStatuses: ['rescheduled'],
+                    disabledOnCurrentStatuses: ['visited', 'not-visited', 'canceled', 'rescheduled'],
+                )),
 
             Forms\Components\Select::make('user_id')
                 ->label(__('Assigned User'))
@@ -199,19 +176,11 @@ class CalendarWidget extends FullCalendarWidget
                     }
                 })
                 ->required()
-                ->disabled(function (callable $get, ?Model $record) {
-                    // Si estamos creando, nunca desactivar
-                    if (!$record) {
-                        return false;
-                    }
+                ->disabled(FilamentHelpers::shouldDisable(
+                    disabledOnOriginalStatuses: ['rescheduled'],
+                    disabledOnCurrentStatuses: ['visited', 'not-visited', 'canceled'],
+                )),
 
-                    $actualStatus = $get('status');
-
-                    // Si estamos editando, verificar el estado original
-                    $originalStatus = $record->getOriginal('status') ?? $record->status;
-
-                    return in_array($originalStatus, ['rescheduled']) || in_array($actualStatus, ['visited', 'not-visited', 'canceled']);
-                }),
             Forms\Components\Select::make('non_visit_reason_id')
                 ->label(__('Non Visit Reason'))
                 ->relationship('nonVisitReason', 'reason')
@@ -219,6 +188,7 @@ class CalendarWidget extends FullCalendarWidget
                 ->preload()
                 ->visible(fn(callable $get) => in_array($get('status'), ['canceled', 'not-visited']))
                 ->required(fn(callable $get) => in_array($get('status'), ['canceled', 'not-visited'])),
+
             Forms\Components\Textarea::make('non_visit_description')
                 ->label(__('Non Visit Description'))
                 ->rows(3)
@@ -232,88 +202,56 @@ class CalendarWidget extends FullCalendarWidget
 
                             Forms\Components\Fieldset::make(__('Organization Information'))
                                 ->schema([
-                                    Forms\Components\TextInput::make('organization.name')
-                                        ->label(__('Organization Name'))
-                                        ->disabled()
-                                        ->dehydrated(false)
-                                        ->formatStateUsing(function (callable $get) {
-                                            $userId = $get('user_id');
-                                            if ($userId) {
-                                                return User::find($userId)?->name;
-                                            }
-                                            return null;
-                                        }),
-                                    Forms\Components\TextInput::make('organization.email')
-                                        ->label(__('Organization Email'))
-                                        ->disabled()
-                                        ->dehydrated(false)
-                                        ->formatStateUsing(function (callable $get) {
-                                            $userId = $get('user_id');
-                                            if ($userId) {
-                                                return User::find($userId)?->email;
-                                            }
-                                            return null;
-                                        }),
-                                    Forms\Components\TextInput::make('organization.cellphone')
-                                        ->label(__('Organization Cellphone'))
-                                        ->disabled()
-                                        ->dehydrated(false)
-                                        ->formatStateUsing(function (callable $get) {
-                                            $userId = $get('user_id');
-                                            if ($userId) {
-                                                return User::find($userId)?->cellphone;
-                                            }
-                                            return null;
-                                        }),
-                                    Forms\Components\Textarea::make('organization.address')
-                                        ->label(__('Organization Address'))
-                                        ->disabled()
-                                        ->dehydrated(false)
-                                        ->formatStateUsing(function (callable $get) {
+                                    CommonFormInputs::displayOnlyTextInput(
+                                        'organization.name',
+                                        __('Organization Name'),
+                                        CommonFormInputs::getEntityFormatter(Organization::class, 'organization_id', 'name')
+                                    ),
+
+                                    CommonFormInputs::displayOnlyTextInput(
+                                        'organization.email',
+                                        __('Organization Email'),
+                                        CommonFormInputs::getEntityFormatter(Organization::class, 'organization_id', 'email')
+                                    ),
+
+                                    CommonFormInputs::displayOnlyTextInput(
+                                        'organization.cellphone',
+                                        __('Organization Cellphone'),
+                                        CommonFormInputs::getEntityFormatter(Organization::class, 'organization_id', 'cellphone')
+                                    ),
+
+                                    CommonFormInputs::displayOnlyTextInput(
+                                        'organization.address',
+                                        __('Organization Address'),
+                                        function (callable $get) {
                                             $organizationId = $get('organization_id');
                                             if ($organizationId) {
                                                 return Organization::find($organizationId)?->addresses->first()?->fullAddress;
                                             }
                                             return null;
-                                        })
-                                        ->rows(2),
+                                        }
+                                    ),
                                 ]),
 
                             Forms\Components\Fieldset::make(__('Seller Information'))
                                 ->schema([
-                                    Forms\Components\TextInput::make('user.name')
-                                        ->label(__('Seller Name'))
-                                        ->disabled()
-                                        ->dehydrated(false)
-                                        ->formatStateUsing(function (callable $get) {
-                                            $userId = $get('user_id');
-                                            if ($userId) {
-                                                return User::find($userId)?->name;
-                                            }
-                                            return null;
-                                        }),
-                                    Forms\Components\TextInput::make('user.email')
-                                        ->label(__('Seller Email'))
-                                        ->disabled()
-                                        ->dehydrated(false)
-                                        ->formatStateUsing(function (callable $get) {
-                                            $userId = $get('user_id');
-                                            if ($userId) {
-                                                return User::find($userId)?->email;
-                                            }
-                                            return null;
-                                        }),
-                                    Forms\Components\TextInput::make('user.cellphone')
-                                        ->label(__('Seller Cellphone'))
-                                        ->disabled()
-                                        ->dehydrated(false)
-                                        ->formatStateUsing(function (callable $get) {
-                                            $userId = $get('user_id');
-                                            if ($userId) {
-                                                return User::find($userId)?->cellphone;
-                                            }
-                                            return null;
-                                        }),
+                                    CommonFormInputs::displayOnlyTextInput(
+                                        'user.name',
+                                        __('Seller Name'),
+                                        CommonFormInputs::getEntityFormatter(User::class, 'user_id', 'name')
+                                    ),
+
+                                    CommonFormInputs::displayOnlyTextInput(
+                                        'user.email',
+                                        __('Seller Email'),
+                                        CommonFormInputs::getEntityFormatter(User::class, 'user_id', 'email')
+                                    ),
+
+                                    CommonFormInputs::displayOnlyTextInput(
+                                        'user.cellphone',
+                                        __('Seller Cellphone'),
+                                        CommonFormInputs::getEntityFormatter(User::class, 'user_id', 'cellphone')
+                                    ),
                                 ]),
                         ]),
                 ])
