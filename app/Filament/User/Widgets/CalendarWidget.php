@@ -6,14 +6,14 @@ use Filament\Forms;
 use App\Models\Visit;
 use Filament\Actions\Action;
 use Illuminate\Support\Facades\Auth;
-use App\Filament\Pages\SurveyResponse;
 use App\Filament\Widgets\BaseCalendarWidget;
+use App\Filament\User\Pages\SurveyResponsePage;
 
 class CalendarWidget extends BaseCalendarWidget
 {
     protected function getEventsQuery()
     {
-        // User solo ve sus propias visitas
+        // User just can see their own visits
         return Visit::query()->where('user_id', Auth::id());
     }
 
@@ -29,17 +29,17 @@ class CalendarWidget extends BaseCalendarWidget
 
     protected function canDelete(): bool
     {
-        return false; // Los usuarios no pueden eliminar visitas
+        return false;
     }
 
     protected function shouldShowOrganizationField(): bool
     {
-        return true; // Los usuarios pueden seleccionar organizaciones
+        return true;
     }
 
     protected function shouldShowUserField(): bool
     {
-        return false; // Se maneja internamente
+        return false;
     }
 
     protected function shouldShowContactInformation(): bool
@@ -49,14 +49,12 @@ class CalendarWidget extends BaseCalendarWidget
 
     protected function mutateCreateFormData(array $data): array
     {
-        // Asignar automáticamente el usuario actual
         $data['user_id'] = Auth::id();
         return parent::mutateCreateFormData($data);
     }
 
     protected function mutateEditFormData(array $data): array
     {
-        // Asegurar que no se cambie el usuario asignado
         $data['user_id'] = Auth::id();
         return parent::mutateEditFormData($data);
     }
@@ -70,16 +68,14 @@ class CalendarWidget extends BaseCalendarWidget
     {
         return [
             Action::make('responseSurvey')
-                ->icon('heroicon-m-x-mark')
+                ->icon('heroicon-m-newspaper')
                 ->color('warning')
                 ->action(function ($record) {
-                    dd($record->user);
-                    return redirect()->to(SurveyResponse::getUrlWithSurvey($record));
+                    return redirect()->to(SurveyResponsePage::getUrlWithSurvey($record->user->assignedSurvey));
                 })
         ];
     }
 
-    // Sobrescribir sección de información de contacto para mostrar solo organización
     protected function getContactInformationSection()
     {
         return Forms\Components\Section::make(__('Contact Information'))
