@@ -8,7 +8,7 @@ class CalendarWidget extends BaseCalendarWidget
 {
     protected function getEventsQuery()
     {
-        return Visit::query(); // Admin ve todas las visitas
+        return Visit::query();
     }
 
     protected function canCreate(): bool
@@ -43,7 +43,7 @@ class CalendarWidget extends BaseCalendarWidget
 
     protected function getAdditionalFields(): array
     {
-        return []; // Admin no tiene campos adicionales por ahora
+        return [];
     }
 
     protected function getAdditionalModalActions(): array
