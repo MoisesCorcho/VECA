@@ -22,6 +22,7 @@ use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use App\Helpers\Filament\CommonColumns;
 use App\Helpers\Filament\CommonFormInputs;
+use App\Models\Survey;
 
 class UserResource extends Resource
 {
@@ -99,6 +100,10 @@ class UserResource extends Resource
                                     ->suffix('visits')
                                     ->helperText('Daily visits limit'),
                             ]),
+
+                        Forms\Components\Select::make('survey_id')
+                            ->label('Survey')
+                            ->options(Survey::query()->active()->pluck('title', 'id'))
                     ]),
             ]);
     }
