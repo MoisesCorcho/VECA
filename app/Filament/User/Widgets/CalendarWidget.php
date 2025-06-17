@@ -8,6 +8,7 @@ use Filament\Actions\Action;
 use Illuminate\Support\Facades\Auth;
 use App\Filament\Widgets\BaseCalendarWidget;
 use App\Filament\User\Pages\SurveyResponsePage;
+use Filament\Notifications\Notification;
 
 class CalendarWidget extends BaseCalendarWidget
 {
@@ -71,7 +72,15 @@ class CalendarWidget extends BaseCalendarWidget
                 ->icon('heroicon-m-newspaper')
                 ->color('warning')
                 ->action(function ($record) {
-                    return redirect()->to(SurveyResponsePage::getUrlWithSurvey($record->user->assignedSurvey));
+                    if ($record->user && $record->user->assignedSurvey) {
+                        return redirect()->to(SurveyResponsePage::getUrlWithSurvey($record->user->assignedSurvey));
+                    }
+
+                    return Notification::make()
+                        ->danger()
+                        ->title('Error')
+                        ->body('User does not have an assigned survey')
+                        ->send();
                 })
         ];
     }

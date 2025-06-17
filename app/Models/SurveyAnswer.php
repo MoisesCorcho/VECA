@@ -14,6 +14,7 @@ class SurveyAnswer extends Model
     protected $fillable = [
         'date',
         'survey_id',
+        'user_id'
     ];
 
     protected function casts(): array

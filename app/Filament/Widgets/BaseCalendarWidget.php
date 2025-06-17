@@ -20,7 +20,7 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
 
     public function fetchEvents(array $fetchInfo): array
     {
-        return Visit::query()
+        return $this->getEventsQuery()
             ->whereBetween('visit_date', [$fetchInfo['start'], $fetchInfo['end']])
             ->with(['organization', 'user'])
             ->get()
@@ -84,37 +84,30 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
     {
         $schema = [];
 
-        // Campos básicos
         $schema[] = $this->getBasicFieldsGrid();
 
-        // Status field
         $schema[] = $this->getStatusField();
 
-        // Organization field (si está habilitado)
         if ($this->shouldShowOrganizationField()) {
             $schema[] = $this->getOrganizationField();
         }
 
-        // User field (si está habilitado)
         if ($this->shouldShowUserField()) {
             $schema[] = $this->getUserField();
         }
 
-        // Non-visit reason fields
         $schema = array_merge($schema, $this->getNonVisitFields());
 
-        // Contact information section (si está habilitado)
         if ($this->shouldShowContactInformation()) {
             $schema[] = $this->getContactInformationSection();
         }
 
-        // Campos adicionales específicos de cada panel
         $schema = array_merge($schema, $this->getAdditionalFields());
 
         return $schema;
     }
 
-    // Métodos abstractos que deben implementar las clases hijas
+    // Abstract methots that must be implemented by child classes
     abstract protected function getEventsQuery();
     abstract protected function canCreate(): bool;
     abstract protected function canEdit(): bool;
@@ -125,7 +118,7 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
     abstract protected function getAdditionalFields(): array;
     abstract protected function getAdditionalModalActions(): array;
 
-    // Métodos que pueden ser sobrescritos
+    // Methods that can be overridden
     protected function mutateCreateFormData(array $data): array
     {
         return $data;
@@ -142,7 +135,6 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
         return !in_array($originalStatus, ['visited', 'not-visited', 'canceled']);
     }
 
-    // Métodos para construir campos comunes
     protected function getBasicFieldsGrid()
     {
         return Forms\Components\Grid::make(2)
@@ -296,7 +288,6 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
         ];
     }
 
-    // Métodos para condiciones de disabled - pueden ser sobrescritos
     protected function getVisitDateDisabledCondition()
     {
         return FilamentHelpers::shouldDisable(

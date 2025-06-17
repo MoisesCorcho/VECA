@@ -7,6 +7,8 @@ use Livewire\Component;
 use Illuminate\View\View;
 use App\Models\SurveyQuestionAnswer;
 use App\Enums\SurveyQuestionsTypeEnum;
+use Illuminate\Support\Facades\Auth;
+use Filament\Notifications\Notification;
 
 class SurveyAnswerForm extends Component
 {
@@ -53,6 +55,7 @@ class SurveyAnswerForm extends Component
 
         $savedAnswer = $this->survey->answers()->create([
             'date' => now(),
+            'user_id' => Auth::id(),
         ]);
 
         $answers = [];
@@ -77,7 +80,13 @@ class SurveyAnswerForm extends Component
 
         SurveyQuestionAnswer::insert($answers);
 
-        $this->redirectRoute('filament.admin.resources.surveys.index');
+        Notification::make()
+            ->success()
+            ->title('Success')
+            ->body('Answer saved successfully')
+            ->send();
+
+        $this->redirectRoute('filament.user.pages.calendar');
     }
 
     public function fillAnswersArray(): void
