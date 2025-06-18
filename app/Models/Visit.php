@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Enums\VisitStatusEnum;
 
 class Visit extends Model
 {
@@ -26,6 +27,7 @@ class Visit extends Model
         return [
             'visit_date' => 'datetime',
             'rescheduled_date' => 'datetime',
+            'status' => VisitStatusEnum::class,
         ];
     }
 
