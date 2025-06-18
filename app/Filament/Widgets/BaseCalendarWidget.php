@@ -30,7 +30,7 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
                     ->title($visit->organization->name ?? 'Visit')
                     ->start($visit->visit_date)
                     ->end($visit->visit_date)
-                    ->backgroundColor(VisitStatusEnum::colors()[$visit->status] ?? '#6b7280');
+                    ->backgroundColor(VisitStatusEnum::colors()[$visit->status->value] ?? '#6b7280');
             })
             ->toArray();
     }
@@ -132,7 +132,7 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
     protected function isEditVisible(Visit $visit, ?Model $record): bool
     {
         $originalStatus = $record->getOriginal('status') ?? $record->status;
-        return !in_array($originalStatus, ['visited', 'not-visited', 'canceled']);
+        return !in_array($originalStatus->value, ['visited', 'not-visited', 'canceled']);
     }
 
     protected function getBasicFieldsGrid()
@@ -165,7 +165,7 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
             ->label(__('Status'))
             ->live()
             ->options(fn(callable $get, callable $set, ?Model $record) => $this->getStatusOptions($get, $set, $record))
-            ->default('scheduled')
+            ->default(VisitStatusEnum::SCHEDULED->value)
             ->required()
             ->disabled($this->getStatusDisabledCondition());
     }
@@ -291,11 +291,8 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
     protected function getVisitDateDisabledCondition()
     {
         return FilamentHelpers::shouldDisable(
-            disabledOnOriginalStatuses: ['visited', 'not-visited', 'canceled'],
-            disabledOnCurrentStatuses: ['visited', 'not-visited', 'canceled', ''],
-            additionalConditions: [
-                fn(callable $get) => $get('status') === 'rescheduled'
-            ]
+            disabledOnOriginalStatuses: [VisitStatusEnum::VISITED, VisitStatusEnum::NOT_VISITED, VisitStatusEnum::CANCELED, VisitStatusEnum::SCHEDULED],
+            disabledOnCurrentStatuses: [VisitStatusEnum::VISITED->value, VisitStatusEnum::NOT_VISITED->value, VisitStatusEnum::CANCELED->value, VisitStatusEnum::RESCHEDULED->value, ''],
         );
     }
 
