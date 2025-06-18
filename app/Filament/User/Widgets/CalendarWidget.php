@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Auth;
 use App\Filament\Widgets\BaseCalendarWidget;
 use App\Filament\User\Pages\SurveyResponsePage;
 use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Model;
+use App\Enums\VisitStatusEnum;
+use App\Helpers\FilamentHelpers;
 
 class CalendarWidget extends BaseCalendarWidget
 {
@@ -73,7 +76,7 @@ class CalendarWidget extends BaseCalendarWidget
                 ->color('warning')
                 ->action(function ($record) {
                     if ($record->user && $record->user->assignedSurvey) {
-                        return redirect()->to(SurveyResponsePage::getUrlWithSurvey($record->user->assignedSurvey));
+                        return redirect()->to(SurveyResponsePage::getUrlWithSurvey($record->user->assignedSurvey, $record));
                     }
 
                     return Notification::make()
@@ -82,6 +85,7 @@ class CalendarWidget extends BaseCalendarWidget
                         ->body('User does not have an assigned survey')
                         ->send();
                 })
+                ->visible(fn($record) => in_array($record->getOriginal('status'), [VisitStatusEnum::SCHEDULED, VisitStatusEnum::RESCHEDULED])),
         ];
     }
 
@@ -93,5 +97,30 @@ class CalendarWidget extends BaseCalendarWidget
                     ->schema($this->getOrganizationInfoFields()),
             ])
             ->collapsed();
+    }
+
+    protected function getStatusField()
+    {
+        return Forms\Components\Select::make('status')
+            ->label(__('Status'))
+            ->live()
+            ->options(fn(callable $get, callable $set, ?Model $record) => $this->getStatusOptions($get, $set, $record))
+            ->default(VisitStatusEnum::SCHEDULED->value)
+            ->required()
+            ->disabled(fn($record) => !$record);
+    }
+
+    protected function getStatusOptions(callable $get, callable $set, ?Model $record): array
+    {
+        return collect(VisitStatusEnum::keyValuesCombined())
+            ->when(!$record, fn($collection) => $collection->forget('rescheduled'))
+            ->when($record && $record->getOriginal('status') === VisitStatusEnum::RESCHEDULED, fn($collection) => $collection->forget(['scheduled', 'visited']))
+            ->when($record && $record->getOriginal('status') === VisitStatusEnum::SCHEDULED, fn($collection) => $collection->forget(['visited']))
+            ->all();
+    }
+
+    protected function getOrganizationDisabledCondition()
+    {
+        return FilamentHelpers::shouldDisable(disableOnEdit: true);
     }
 }
