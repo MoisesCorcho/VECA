@@ -39,18 +39,21 @@ final class FilamentHelpers
      * @param array $disabledOnCurrentStatuses Actual statues that disable the field
      * @param array $additionalConditions Additional conditions
      * @param bool $disableOnCreate If the field should be disabled on create (default false)
+     * @param bool $disableOnEdit If the field should be disabled on edit (default false)
      */
     public static function shouldDisable(
         array $disabledOnOriginalStatuses = [],
         array $disabledOnCurrentStatuses = [],
         array $additionalConditions = [],
-        bool $disableOnCreate = false
+        bool $disableOnCreate = false,
+        bool $disableOnEdit = false,
     ): callable {
         return function (callable $get, ?Model $record) use (
             $disabledOnOriginalStatuses,
             $disabledOnCurrentStatuses,
             $additionalConditions,
-            $disableOnCreate
+            $disableOnCreate,
+            $disableOnEdit
         ) {
             // If is creation
             if (!$record) {
@@ -65,6 +68,11 @@ final class FilamentHelpers
                 }
 
                 return false;
+            }
+
+            // If is edit
+            if ($disableOnEdit) {
+                return true;
             }
 
             // If is update
