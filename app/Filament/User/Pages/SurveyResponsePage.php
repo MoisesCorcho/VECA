@@ -4,6 +4,7 @@ namespace App\Filament\User\Pages;
 
 use Filament\Pages\Page;
 use App\Models\Survey;
+use App\Models\Visit;
 
 class SurveyResponsePage extends Page
 {
@@ -15,16 +16,20 @@ class SurveyResponsePage extends Page
     protected static bool $shouldRegisterNavigation = false;
 
     public ?Survey $survey = null;
+    public ?Visit $visit = null;
 
-    public static function getUrlWithSurvey(Survey $survey): string
+    public static function getUrlWithSurvey(Survey $survey, Visit $visit): string
     {
-        return static::getUrl(['survey_id' => $survey->id]);
+        return static::getUrl(['survey_id' => $survey->id, 'visit_id' => $visit]);
     }
 
     public function mount(): void
     {
         $surveyId = request()->query('survey_id');
-        if ($surveyId) {
+        $visitId = request()->query('visit_id');
+
+        if ($surveyId && $visitId) {
+            $this->visit = Visit::find($visitId);
             $this->survey = Survey::find($surveyId);
         }
     }
