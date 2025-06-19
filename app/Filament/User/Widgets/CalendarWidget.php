@@ -73,7 +73,11 @@ class CalendarWidget extends BaseCalendarWidget
         return [
             Action::make('responseSurvey')
                 ->icon('heroicon-m-newspaper')
-                ->color('warning')
+                ->color('success')
+                ->requiresConfirmation()
+                ->modalHeading(__('Start Survey'))
+                ->modalDescription(__('Are you sure you want to start the survey? The appointment status will be changed to "visited".'))
+                ->modalSubmitActionLabel(__('Start Survey'))
                 ->action(function ($record) {
                     if ($record->user && $record->user->assignedSurvey) {
                         return redirect()->to(SurveyResponsePage::getUrlWithSurvey($record->user->assignedSurvey, $record));

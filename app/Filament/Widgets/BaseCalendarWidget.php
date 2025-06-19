@@ -13,6 +13,7 @@ use App\Models\Organization;
 use App\Models\User;
 use App\Helpers\FilamentHelpers;
 use App\Helpers\Filament\CommonFormInputs;
+use Carbon\Carbon;
 
 abstract class BaseCalendarWidget extends FullCalendarWidget
 {
@@ -28,8 +29,8 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
                 return EventData::make()
                     ->id($visit->id)
                     ->title($visit->organization->name ?? 'Visit')
-                    ->start($visit->visit_date)
-                    ->end($visit->visit_date)
+                    ->start($visit->rescheduled_date ?? $visit->visit_date)
+                    ->end($visit->rescheduled_date ?? $visit->visit_date)
                     ->backgroundColor(VisitStatusEnum::colors()[$visit->status->value] ?? '#6b7280');
             })
             ->toArray();
@@ -132,7 +133,7 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
     protected function isEditVisible(Visit $visit, ?Model $record): bool
     {
         $originalStatus = $record->getOriginal('status') ?? $record->status;
-        return !in_array($originalStatus->value, ['visited', 'not-visited', 'canceled']);
+        return !in_array($originalStatus->value, VisitStatusEnum::finalStatuses('string'));
     }
 
     protected function getBasicFieldsGrid()
@@ -149,13 +150,13 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
                 Forms\Components\DatePicker::make('rescheduled_date')
                     ->label(__('Rescheduled Date'))
                     ->nullable()
-                    ->minDate(now()->startOfDay())
+                    ->minDate(fn(callable $get) => $get('visit_date') ? Carbon::parse($get('visit_date'))->addDay()->startOfDay() : now()->startOfDay())
                     ->visible(function (callable $get, ?Model $record) {
                         if ($record) {
-                            return ($record->rescheduled_date || $get('status') === 'rescheduled');
+                            return ($record->rescheduled_date || $get('status') === VisitStatusEnum::RESCHEDULED->value);
                         }
                     })
-                    ->required(fn(callable $get) => $get('status') === 'rescheduled'),
+                    ->required(fn(callable $get) => $get('status') === VisitStatusEnum::RESCHEDULED->value),
             ]);
     }
 
@@ -208,14 +209,14 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
                 ->relationship('nonVisitReason', 'reason')
                 ->searchable()
                 ->preload()
-                ->visible(fn(callable $get) => in_array($get('status'), ['canceled', 'not-visited']))
-                ->required(fn(callable $get) => in_array($get('status'), ['canceled', 'not-visited'])),
+                ->visible(fn(callable $get) => in_array($get('status'), [VisitStatusEnum::CANCELED->value, VisitStatusEnum::NOT_VISITED->value]))
+                ->required(fn(callable $get) => in_array($get('status'), [VisitStatusEnum::CANCELED->value, VisitStatusEnum::NOT_VISITED->value])),
 
             Forms\Components\Textarea::make('non_visit_description')
                 ->label(__('Non Visit Description'))
                 ->rows(3)
-                ->visible(fn(callable $get) => in_array($get('status'), ['canceled', 'not-visited']))
-                ->required(fn(callable $get) => in_array($get('status'), ['canceled', 'not-visited'])),
+                ->visible(fn(callable $get) => in_array($get('status'), [VisitStatusEnum::CANCELED->value, VisitStatusEnum::NOT_VISITED->value]))
+                ->required(fn(callable $get) => in_array($get('status'), [VisitStatusEnum::CANCELED->value, VisitStatusEnum::NOT_VISITED->value])),
         ];
     }
 
@@ -291,39 +292,39 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
     protected function getVisitDateDisabledCondition()
     {
         return FilamentHelpers::shouldDisable(
-            disabledOnOriginalStatuses: [VisitStatusEnum::VISITED, VisitStatusEnum::NOT_VISITED, VisitStatusEnum::CANCELED, VisitStatusEnum::SCHEDULED],
-            disabledOnCurrentStatuses: [VisitStatusEnum::VISITED->value, VisitStatusEnum::NOT_VISITED->value, VisitStatusEnum::CANCELED->value, VisitStatusEnum::RESCHEDULED->value, ''],
+            disabledOnOriginalStatuses: VisitStatusEnum::finalStatuses('string', [VisitStatusEnum::SCHEDULED]),
+            disabledOnCurrentStatuses: VisitStatusEnum::finalStatuses('string', [VisitStatusEnum::RESCHEDULED, '']),
         );
     }
 
     protected function getStatusDisabledCondition()
     {
         return FilamentHelpers::shouldDisable(
-            disabledOnOriginalStatuses: ['visited', 'not-visited', 'canceled']
+            disabledOnOriginalStatuses: VisitStatusEnum::finalStatuses('string')
         );
     }
 
     protected function getOrganizationDisabledCondition()
     {
         return FilamentHelpers::shouldDisable(
-            disabledOnOriginalStatuses: ['rescheduled'],
-            disabledOnCurrentStatuses: ['visited', 'not-visited', 'canceled', 'rescheduled'],
+            disabledOnOriginalStatuses: [VisitStatusEnum::RESCHEDULED->value],
+            disabledOnCurrentStatuses: VisitStatusEnum::finalStatuses('string', [VisitStatusEnum::RESCHEDULED]),
         );
     }
 
     protected function getUserDisabledCondition()
     {
         return FilamentHelpers::shouldDisable(
-            disabledOnOriginalStatuses: ['rescheduled'],
-            disabledOnCurrentStatuses: ['visited', 'not-visited', 'canceled'],
+            disabledOnOriginalStatuses: [VisitStatusEnum::RESCHEDULED->value],
+            disabledOnCurrentStatuses: VisitStatusEnum::finalStatuses('string'),
         );
     }
 
     protected function getStatusOptions(callable $get, callable $set, ?Model $record): array
     {
         return collect(VisitStatusEnum::keyValuesCombined())
-            ->when(!$record, fn($collection) => $collection->forget('rescheduled'))
-            ->when($record && $record->getOriginal('status') === 'rescheduled', fn($collection) => $collection->forget('scheduled'))
+            ->when(!$record, fn($collection) => $collection->forget(VisitStatusEnum::RESCHEDULED->value))
+            ->when($record && $record->getOriginal('status') === VisitStatusEnum::RESCHEDULED->value, fn($collection) => $collection->forget(VisitStatusEnum::SCHEDULED->value))
             ->all();
     }
 
