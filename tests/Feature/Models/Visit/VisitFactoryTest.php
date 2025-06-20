@@ -18,7 +18,7 @@ test('can create a scheduled visit with factory', function () {
 
     expect($visit)->toBeInstanceOf(Visit::class)
         ->and($visit->id)->toBeInt()
-        ->and($visit->status)->toBe(VisitStatusEnum::SCHEDULED->value);
+        ->and($visit->status)->toBe(VisitStatusEnum::SCHEDULED);
 });
 
 test('can create a not visited visit with factory', function () {
@@ -26,7 +26,7 @@ test('can create a not visited visit with factory', function () {
 
     expect($visit)->toBeInstanceOf(Visit::class)
         ->and($visit->id)->toBeInt()
-        ->and($visit->status)->toBe(VisitStatusEnum::NOT_VISITED->value);
+        ->and($visit->status)->toBe(VisitStatusEnum::NOT_VISITED);
 });
 
 test('can create a canceled visit with factory', function () {
@@ -34,7 +34,7 @@ test('can create a canceled visit with factory', function () {
 
     expect($visit)->toBeInstanceOf(Visit::class)
         ->and($visit->id)->toBeInt()
-        ->and($visit->status)->toBe(VisitStatusEnum::CANCELED->value);
+        ->and($visit->status)->toBe(VisitStatusEnum::CANCELED);
 });
 
 test('can create a rescheduled visit with factory', function () {
@@ -42,7 +42,7 @@ test('can create a rescheduled visit with factory', function () {
 
     expect($visit)->toBeInstanceOf(Visit::class)
         ->and($visit->id)->toBeInt()
-        ->and($visit->status)->toBe(VisitStatusEnum::RESCHEDULED->value);
+        ->and($visit->status)->toBe(VisitStatusEnum::RESCHEDULED);
 });
 
 test('can create a visited visit with factory', function () {
@@ -50,5 +50,5 @@ test('can create a visited visit with factory', function () {
 
     expect($visit)->toBeInstanceOf(Visit::class)
         ->and($visit->id)->toBeInt()
-        ->and($visit->status)->toBe(VisitStatusEnum::VISITED->value);
+        ->and($visit->status)->toBe(VisitStatusEnum::VISITED);
 });

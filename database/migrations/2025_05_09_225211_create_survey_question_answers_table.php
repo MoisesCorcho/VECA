@@ -18,7 +18,6 @@ return new class extends Migration
             $table->text('answer');
             $table->foreignIdFor(SurveyQuestion::class, 'survey_question_id')->constrained();
             $table->foreignIdFor(SurveyAnswer::class, 'survey_answer_id')->constrained();
-            $table->timestamps();
         });
     }
 

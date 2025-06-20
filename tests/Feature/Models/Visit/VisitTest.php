@@ -22,7 +22,7 @@ test('can create a visit', function () {
         'visit_date' => $visitDate,
         'rescheduled_date' => $rescheduledDate,
         'non_visit_description' => null,
-        'status' => VisitStatusEnum::RESCHEDULED->value,
+        'status' => VisitStatusEnum::RESCHEDULED,
         'organization_id' => $organization->id,
         'user_id' => $user->id,
         'non_visit_reason_id' => $noVisitReason->id,
@@ -35,7 +35,7 @@ test('can create a visit', function () {
         ->and($visit->visit_date->toDateTimeString())->toBe($visitDate->toDateTimeString())
         ->and($visit->rescheduled_date->toDateTimeString())->toBe($rescheduledDate->toDateTimeString())
         ->and($visit->non_visit_description)->toBeNull()
-        ->and($visit->status)->toBe(VisitStatusEnum::RESCHEDULED->value)
+        ->and($visit->status)->toBe(VisitStatusEnum::RESCHEDULED)
         ->and($visit->organization_id)->tobeUuid($organization->id)
         ->and($visit->user_id)->tobeInt($user->id)
         ->and($visit->non_visit_reason_id)->tobeInt($noVisitReason->id);
@@ -53,7 +53,7 @@ test('can update a visit', function () {
         'visit_date' => $visitDate,
         'rescheduled_date' => null,
         'non_visit_description' => null,
-        'status' => VisitStatusEnum::SCHEDULED->value,
+        'status' => VisitStatusEnum::SCHEDULED,
         'organization_id' => $organization->id,
         'user_id' => $user->id,
         'non_visit_reason_id' => $noVisitReason->id,
@@ -63,7 +63,7 @@ test('can update a visit', function () {
         'visit_date' => $visitDate,
         'rescheduled_date' => $rescheduledDate,
         'non_visit_description' => null,
-        'status' => VisitStatusEnum::RESCHEDULED->value,
+        'status' => VisitStatusEnum::RESCHEDULED,
         'organization_id' => $organization->id,
         'user_id' => $user->id,
         'non_visit_reason_id' => $noVisitReason->id,
@@ -76,7 +76,7 @@ test('can update a visit', function () {
         ->and($visit->visit_date->toDateTimeString())->toBe($visitDate->toDateTimeString())
         ->and($visit->rescheduled_date->toDateTimeString())->toBe($rescheduledDate->toDateTimeString())
         ->and($visit->non_visit_description)->toBeNull()
-        ->and($visit->status)->toBe(VisitStatusEnum::RESCHEDULED->value)
+        ->and($visit->status)->toBe(VisitStatusEnum::RESCHEDULED)
         ->and($visit->organization_id)->tobeUuid($organization->id)
         ->and($visit->user_id)->tobeInt($user->id)
         ->and($visit->non_visit_reason_id)->tobeInt($noVisitReason->id);

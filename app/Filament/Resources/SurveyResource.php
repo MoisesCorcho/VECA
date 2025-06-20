@@ -101,7 +101,7 @@ class SurveyResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Action::make('response')
-                    ->icon('heroicon-m-x-mark')
+                    ->icon('heroicon-m-newspaper')
                     ->color('warning')
                     ->action(function (Survey $record) {
                         return redirect()->to(SurveyResponse::getUrlWithSurvey($record));

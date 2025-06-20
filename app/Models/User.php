@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use App\Traits\ModelUtilityTrait;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -35,6 +36,7 @@ class User extends Authenticatable implements FilamentUser
         'dni',
         'active',
         'visits_per_day',
+        'survey_id',
     ];
 
     /**
@@ -88,6 +90,19 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->hasMany(Organization::class);
     }
+
+    // If it is an admin
+    public function surveysCreated(): HasMany
+    {
+        return $this->hasMany(Survey::class, 'user_id');
+    }
+
+    // If it is a seller
+    public function assignedSurvey(): BelongsTo
+    {
+        return $this->belongsTo(Survey::class, 'survey_id');
+    }
+
 
     public function scopeActive($query)
     {

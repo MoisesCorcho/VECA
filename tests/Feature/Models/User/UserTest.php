@@ -29,6 +29,7 @@ test('user has correct fillable attributes', function () {
         'dni',
         'active',
         'visits_per_day',
+        'survey_id',
     ];
 
     expect((new User())->getFillable())->toBe($fillable);

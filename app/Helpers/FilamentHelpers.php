@@ -31,4 +31,76 @@ final class FilamentHelpers
         }
         return false;
     }
+
+    /**
+     * Function to determine if a field should be disabled
+     *
+     * @param array $disabledOnOriginalStatuses Original statues that disable the field
+     * @param array $disabledOnCurrentStatuses Actual statues that disable the field
+     * @param array $additionalConditions Additional conditions
+     * @param bool $disableOnCreate If the field should be disabled on create (default false)
+     * @param bool $disableOnEdit If the field should be disabled on edit (default false)
+     */
+    public static function shouldDisable(
+        array $disabledOnOriginalStatuses = [],
+        array $disabledOnCurrentStatuses = [],
+        array $additionalConditions = [],
+        bool $disableOnCreate = false,
+        bool $disableOnEdit = false,
+    ): callable {
+        return function (callable $get, ?Model $record) use (
+            $disabledOnOriginalStatuses,
+            $disabledOnCurrentStatuses,
+            $additionalConditions,
+            $disableOnCreate,
+            $disableOnEdit
+        ) {
+            // If is creation
+            if (!$record) {
+                if ($disableOnCreate) {
+                    return true;
+                }
+
+                // verify conditions based on current status
+                $currentStatus = $get('status');
+                if ($currentStatus && in_array($currentStatus, $disabledOnCurrentStatuses)) {
+                    return true;
+                }
+
+                return false;
+            }
+
+            // If is edit
+            if ($disableOnEdit) {
+                return true;
+            }
+
+            // If is update
+            $currentStatus = $get('status');
+            $originalStatus = $record->getOriginal('status') ?? $record->status;
+
+            // Verify conditions based on original status
+            if (in_array($originalStatus, $disabledOnOriginalStatuses)) {
+                return true;
+            }
+
+            // Verify conditions based on current status
+            if ($currentStatus && in_array($currentStatus, $disabledOnCurrentStatuses)) {
+                return true;
+            }
+
+            // Verify additional conditions
+            foreach ($additionalConditions as $condition) {
+                if (is_callable($condition)) {
+                    if ($condition($get, $record, $currentStatus, $originalStatus)) {
+                        return true;
+                    }
+                } elseif (is_bool($condition) && $condition) {
+                    return true;
+                }
+            }
+
+            return false;
+        };
+    }
 }

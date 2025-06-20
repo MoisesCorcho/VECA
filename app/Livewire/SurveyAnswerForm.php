@@ -7,19 +7,25 @@ use Livewire\Component;
 use Illuminate\View\View;
 use App\Models\SurveyQuestionAnswer;
 use App\Enums\SurveyQuestionsTypeEnum;
+use Illuminate\Support\Facades\Auth;
+use Filament\Notifications\Notification;
+use App\Models\Visit;
+use App\Enums\VisitStatusEnum;
 
 class SurveyAnswerForm extends Component
 {
     public Survey $survey;
+    public Visit $visit;
     public array $answers = [];
 
     //Enums
     public $surveyQuestionsTypeEnum;
 
-    public function mount(Survey|null $survey = null): void
+    public function mount(Survey|null $survey = null, Visit|null $visit = null): void
     {
-        if ($survey) {
+        if ($survey && $visit) {
             $this->survey = $survey;
+            $this->visit = $visit;
         }
 
         $this->surveyQuestionsTypeEnum = SurveyQuestionsTypeEnum::class;
@@ -53,6 +59,7 @@ class SurveyAnswerForm extends Component
 
         $savedAnswer = $this->survey->answers()->create([
             'date' => now(),
+            'user_id' => Auth::id(),
         ]);
 
         $answers = [];
@@ -77,7 +84,17 @@ class SurveyAnswerForm extends Component
 
         SurveyQuestionAnswer::insert($answers);
 
-        $this->redirectRoute('filament.admin.resources.surveys.index');
+        $this->visit->update([
+            'status' => VisitStatusEnum::VISITED
+        ]);
+
+        Notification::make()
+            ->success()
+            ->title('Success')
+            ->body('Answer saved successfully')
+            ->send();
+
+        $this->redirectRoute('filament.user.pages.calendar');
     }
 
     public function fillAnswersArray(): void
