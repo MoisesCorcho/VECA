@@ -185,16 +185,19 @@ test('a survey can have questions with preserved data structure', function () {
 
 test('a survey can have answers', function () {
     $survey = Survey::factory()->create();
+    $user = User::factory()->create();
 
     $date = now();
     $date2 = now()->addDay();
 
     $surveyAnswer1 = $survey->answers()->create([
         'date' => $date,
+        'user_id' => $user->id
     ]);
 
     $surveyAnswer2 = $survey->answers()->create([
         'date' => $date2,
+        'user_id' => $user->id
     ]);
 
     expect($survey->answers)->toHaveCount(2)
