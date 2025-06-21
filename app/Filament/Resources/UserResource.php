@@ -75,23 +75,24 @@ class UserResource extends Resource
                 Forms\Components\Section::make('Account Settings')
                     ->description('Access settings and preferences')
                     ->schema([
-                        Forms\Components\TextInput::make('password')
-                            ->label('Password')
-                            ->password()
-                            ->revealable()
-                            ->required(function (string $operation): bool {
-                                return $operation === 'create';
-                            })
-                            ->dehydrated(fn($state) => filled($state))
-                            ->minLength(8)
-                            ->helperText('Minimum 8 characters'),
+                        Forms\Components\Toggle::make('active')
+                            ->label('Active User')
+                            ->required()
+                            ->default(true),
 
                         Forms\Components\Grid::make(2)
                             ->schema([
-                                Forms\Components\Toggle::make('active')
-                                    ->label('Active User')
-                                    ->required()
-                                    ->default(true),
+                                Forms\Components\TextInput::make('password')
+                                    ->label('Password')
+                                    ->password()
+                                    ->revealable()
+                                    ->required(function (string $operation): bool {
+                                        return $operation === 'create';
+                                    })
+                                    ->dehydrated(fn($state) => filled($state))
+                                    ->minLength(8)
+                                    ->helperText('Minimum 8 characters'),
+
                                 Forms\Components\TextInput::make('visits_per_day')
                                     ->label('Visits Per Day')
                                     ->numeric()
@@ -103,7 +104,13 @@ class UserResource extends Resource
 
                         Forms\Components\Select::make('survey_id')
                             ->label('Survey')
-                            ->options(Survey::query()->active()->pluck('title', 'id'))
+                            ->options(Survey::query()->active()->pluck('title', 'id')),
+
+                        Forms\Components\Select::make('roles')
+                            ->relationship('roles', 'name')
+                            ->multiple()
+                            ->preload()
+                            ->searchable(),
                     ]),
             ]);
     }
