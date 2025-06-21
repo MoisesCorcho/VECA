@@ -22,7 +22,10 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
     public function fetchEvents(array $fetchInfo): array
     {
         return $this->getEventsQuery()
-            ->whereBetween('visit_date', [$fetchInfo['start'], $fetchInfo['end']])
+            ->whereRaw('COALESCE(rescheduled_date, visit_date) BETWEEN ? AND ?', [
+                $fetchInfo['start'],
+                $fetchInfo['end']
+            ])
             ->with(['organization', 'user'])
             ->get()
             ->map(function (Visit $visit) {
