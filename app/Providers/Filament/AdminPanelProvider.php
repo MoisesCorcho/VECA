@@ -19,6 +19,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
+use Shanerbaner82\PanelRoles\PanelRoles;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -60,6 +61,9 @@ class AdminPanelProvider extends PanelProvider
                 FilamentFullCalendarPlugin::make()
                     ->locale(config('app.locale'))
                     ->timezone(config('app.timezone')),
+                PanelRoles::make()
+                    ->roleToAssign('super_admin')
+                    ->restrictedRoles(['super_admin']),
             ]);
     }
 }
