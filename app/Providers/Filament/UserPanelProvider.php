@@ -60,8 +60,8 @@ class UserPanelProvider extends PanelProvider
                     ->locale(config('app.locale'))
                     ->timezone(config('app.timezone')),
                 PanelRoles::make()
-                    ->roleToAssign('User')
-                    ->restrictedRoles(['User']),
+                    ->roleToAssign('Seller')
+                    ->restrictedRoles(['Seller']),
             ]);
     }
 }

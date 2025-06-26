@@ -140,3 +140,101 @@ test('a survey question belongs to a survey', function () {
         ->and($surveyQuestion->survey->id)->toBe($survey->id)
         ->and($surveyQuestion->survey->title)->toBe($survey->title);
 });
+
+test('a survey question can have children', function () {
+    $survey = Survey::factory()->create();
+
+    $surveyQuestionParent = SurveyQuestion::factory()->create([
+        'survey_id' => $survey->id,
+        'parent_id' => null
+    ]);
+
+    SurveyQuestion::factory(3)->create([
+        'parent_id' => $surveyQuestionParent->id,
+        'survey_id' => $survey->id
+    ]);
+
+    expect($surveyQuestionParent->children)->toHaveCount(3)
+        ->and($surveyQuestionParent->children->first())->toBeInstanceOf(SurveyQuestion::class)
+        ->and($surveyQuestionParent->children->first()->parent_id)->toBe($surveyQuestionParent->id);
+});
+
+test('a survey question can have a parent', function () {
+    $survey = Survey::factory()->create();
+
+    $surveyQuestionParent = SurveyQuestion::factory()->create([
+        'survey_id' => $survey->id,
+        'parent_id' => null
+    ]);
+
+    $surveyQuestionChildren = SurveyQuestion::factory(3)->create([
+        'parent_id' => $surveyQuestionParent->id,
+        'survey_id' => $survey->id
+    ]);
+
+    expect($surveyQuestionChildren->first()->parent)->toBeInstanceOf(SurveyQuestion::class);
+
+    foreach ($surveyQuestionChildren as $surveyQuestionChild) {
+        expect($surveyQuestionChild->parent->id)->toBe($surveyQuestionParent->id);
+    }
+});
+
+test('circular reference is not allowed', function () {
+    $survey = Survey::factory()->create();
+
+    $surveyQuestionParent = SurveyQuestion::factory()->create([
+        'survey_id' => $survey->id,
+        'parent_id' => null
+    ]);
+
+    $surveyQuestionParent->update([
+        'survey_id' => $survey->id,
+        'parent_id' => $surveyQuestionParent->id,
+    ]);
+
+    $surveyQuestionParent->save();
+})->throws(Exception::class, 'Circular reference detected.');
+
+test('can detect circular reference in update', function () {
+    $survey = Survey::factory()->create();
+
+    $surveyQuestionParent = SurveyQuestion::factory()->create([
+        'question' => 'Parent Question',
+        'survey_id' => $survey->id,
+        'parent_id' => null
+    ]);
+
+    $maxDepth = $surveyQuestionParent->getMaxDepth();
+
+    $previousQuestion = $surveyQuestionParent;
+    for ($i = 0; $i < $maxDepth; $i++) {
+        $previousQuestion = SurveyQuestion::factory()->create([
+            'survey_id' => $survey->id,
+            'parent_id' => $previousQuestion->id
+        ]);
+    }
+
+    SurveyQuestion::find(2)->update([
+        'parent_id' => 2
+    ]);
+})->throws(Exception::class, 'Circular reference detected.');
+
+test('max depth is working', function () {
+    $survey = Survey::factory()->create();
+
+    $surveyQuestionParent = SurveyQuestion::factory()->create([
+        'question' => 'Parent Question',
+        'survey_id' => $survey->id,
+        'parent_id' => null
+    ]);
+
+    $maxDepth = $surveyQuestionParent->getMaxDepth();
+
+    $previousQuestion = $surveyQuestionParent;
+    for ($i = 0; $i <= $maxDepth; $i++) {
+        $previousQuestion = SurveyQuestion::factory()->create([
+            'survey_id' => $survey->id,
+            'parent_id' => $previousQuestion->id
+        ]);
+    }
+})->throws(Exception::class, 'Maximum depth level reached.');
