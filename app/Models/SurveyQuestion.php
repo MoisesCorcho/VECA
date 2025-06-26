@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\HasHierarchyTrait;
 
 class SurveyQuestion extends Model
 {
     /** @use HasFactory<\Database\Factories\SurveyQuestionFactory> */
-    use HasFactory;
+    use HasFactory, HasHierarchyTrait;
 
     protected $fillable = [
         'type',
@@ -17,6 +18,7 @@ class SurveyQuestion extends Model
         'description',
         'data',
         'survey_id',
+        'parent_id',
     ];
 
     protected function casts(): array
