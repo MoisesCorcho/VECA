@@ -5,9 +5,12 @@ namespace App\Filament\User\Pages;
 use Filament\Pages\Page;
 use App\Models\Survey;
 use App\Models\Visit;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
 class SurveyResponsePage extends Page
 {
+    use HasPageShield;
+
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     protected static string $view = 'filament.user.pages.survey-response-page';

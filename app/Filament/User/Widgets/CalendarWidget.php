@@ -12,9 +12,12 @@ use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
 use App\Enums\VisitStatusEnum;
 use App\Helpers\FilamentHelpers;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 
 class CalendarWidget extends BaseCalendarWidget
 {
+    use HasWidgetShield;
+
     protected function getEventsQuery()
     {
         // User just can see their own visits

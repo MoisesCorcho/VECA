@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('organizations', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name');
-            $table->string('description');
+            $table->string('description')->nullable();
             $table->string('nit')->unique();
             $table->string('cellphone')->unique();
-            $table->string('phone');
-            $table->string('email')->unique();
+            $table->string('phone')->nullable();
+            $table->string('email')->nullable()->unique();
             $table->foreignId('user_id')->nullable()->constrained();
             $table->timestamps();
         });

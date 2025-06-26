@@ -7,12 +7,14 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "bezhansalleh/filament-shield": "^3.3",
         "filament/filament": "^3.3",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
         "livewire/flux": "^2.1.1",
         "livewire/volt": "^1.7.0",
-        "saade/filament-fullcalendar": "^3.2"
+        "saade/filament-fullcalendar": "^3.2",
+        "shanerbaner82/panel-roles": "^0.0.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
