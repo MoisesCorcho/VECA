@@ -19,12 +19,14 @@ class SurveyQuestion extends Model
         'data',
         'survey_id',
         'parent_id',
+        'triggering_answer'
     ];
 
     protected function casts(): array
     {
         return [
             'data' => 'array',
+            'triggering_answer' => 'array',
         ];
     }
 
