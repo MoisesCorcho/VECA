@@ -25,14 +25,15 @@ class PermissionSeeder extends Seeder
         Artisan::call('shield:super-admin', ['--user' => $adminUser->id]);
 
         // Get permissions that contain "request" in their name
-        $requestPermissions = Permission::where('name', 'like', '%request%')->get();
+        $sellerPermissions = Permission::where('name', 'like', '%page%')->orWhere('name', 'like', '%calendar%')->get();
+        $adminPermissions = Permission::all();
 
         $admin = Role::where('name', 'Admin')->first();
         $seller = Role::where('name', 'Seller')->first();
 
         // Assign permissions to roles
-        $admin->syncPermissions($requestPermissions);
-        $seller->syncPermissions($requestPermissions);
+        $admin->syncPermissions($adminPermissions);
+        $seller->syncPermissions($sellerPermissions);
 
         $this->command->info('Roles y permisos creados correctamente.');
     }

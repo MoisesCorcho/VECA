@@ -27,7 +27,8 @@ class UserSeeder extends Seeder
                 'dniType'   => 'CC',
                 'dni'       => '1005478121',
                 'password'  =>  Hash::make('password'),
-                'surveyId'  =>  null
+                'surveyId'  =>  null,
+                'visits_per_day' => null
             ],
             [
                 'firstName' => 'Francisco Manuel', //Admin
@@ -38,7 +39,8 @@ class UserSeeder extends Seeder
                 'dniType'   => 'CC',
                 'dni'       => '1005478122',
                 'password'  =>  Hash::make('password'),
-                'surveyId'  =>  null
+                'surveyId'  =>  null,
+                'visits_per_day' => null
             ],
             [
                 'firstName' => 'Maira',
@@ -49,7 +51,8 @@ class UserSeeder extends Seeder
                 'dniType'   => 'CC',
                 'dni'       => '1005478123',
                 'password'  =>  Hash::make('password'),
-                'surveyId'  =>  null
+                'surveyId'  =>  null,
+                'visits_per_day' => 8
             ],
             [
                 'firstName' => 'Hector',
@@ -60,7 +63,8 @@ class UserSeeder extends Seeder
                 'dniType'   => 'CC',
                 'dni'       => '1005472347',
                 'password'  =>  Hash::make('password'),
-                'surveyId'  =>  null
+                'surveyId'  =>  null,
+                'visits_per_day' => 8
             ],
             [
                 'firstName' => 'Verónica',
@@ -71,7 +75,8 @@ class UserSeeder extends Seeder
                 'dniType'   => 'CC',
                 'dni'       => '1005479536',
                 'password'  =>  Hash::make('password'),
-                'surveyId'  =>  null
+                'surveyId'  =>  null,
+                'visits_per_day' => 8
             ],
 
         ];
@@ -87,8 +92,18 @@ class UserSeeder extends Seeder
                 $response->dni       = $user['dni'];
                 $response->password  = $user['password'];
                 $response->survey_id  = $user['surveyId'];
+                $response->visits_per_day = $user['visits_per_day'];
                 $response->save();
             }
         }
+
+        User::query()
+            ->where('email', 'like', '%hector%')
+            ->orWhere('email', 'like', '%maira%')
+            ->orWhere('email', 'like', '%veronica%')
+            ->get()
+            ->each(function ($user) {
+                $user->assignRole('Seller');
+            });
     }
 }

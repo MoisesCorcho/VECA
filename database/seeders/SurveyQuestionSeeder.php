@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Member;
+use App\Models\MemberPosition;
+use App\Models\Organization;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Survey;
@@ -25,7 +28,6 @@ class SurveyQuestionSeeder extends Seeder
                 'type' => 'select',
                 'question' => '¿Es nuevo el cliente?',
                 'description' => null,
-                "tableType" => "newclient",
                 'data' => ['Si', 'No']
             ],
             [
@@ -33,7 +35,9 @@ class SurveyQuestionSeeder extends Seeder
                 'type' => 'select',
                 'question' => 'Cliente',
                 'description' => null,
-                "tableType" => "organization",
+                'options_source' => 'database',
+                'options_model' => Organization::class,
+                'options_label_column' => 'name',
                 'data' => []
             ],
             [
@@ -41,7 +45,9 @@ class SurveyQuestionSeeder extends Seeder
                 'type' => 'select',
                 'question' => 'Nombre de contacto',
                 'description' => null,
-                "tableType" => "member",
+                'options_source' => 'database',
+                'options_model' => Member::class,
+                'options_label_column' => 'first_name',
                 'data' => []
             ],
             [
@@ -49,7 +55,9 @@ class SurveyQuestionSeeder extends Seeder
                 'type' => 'select',
                 'question' => 'Cargo de contacto',
                 'description' => null,
-                "tableType" => "memberPosition",
+                'options_source' => 'database',
+                'options_model' => MemberPosition::class,
+                'options_label_column' => 'name',
                 'data' => []
             ],
             [
@@ -57,7 +65,6 @@ class SurveyQuestionSeeder extends Seeder
                 'type' => 'select',
                 'question' => 'Proposito',
                 'description' => null,
-                "tableType" => null,
                 'data' => $proposito
             ],
             [
@@ -65,15 +72,13 @@ class SurveyQuestionSeeder extends Seeder
                 'type' => 'select',
                 'question' => '¿Realizó venta?',
                 'description' => null,
-                "tableType" => null,
-                'data' => []
+                'data' => ['Si', 'No']
             ],
             [
                 'id' => 7,
                 'type' => 'select',
                 'question' => '¿El cliente realizó pago?',
                 'description' => null,
-                "tableType" => null,
                 'data' => ['Si', 'No']
             ],
             [
@@ -81,31 +86,27 @@ class SurveyQuestionSeeder extends Seeder
                 'type' => 'select',
                 'question' => '¿Se obtuvo un logro?',
                 'description' => null,
-                "tableType" => null,
                 'data' => ['Si', 'No']
             ],
             [
                 'id' => 9,
-                'type' => 'text',
+                'type' => 'textarea',
                 'question' => 'Breve descripción SI obtuvo algún logro',
                 'description' => null,
-                "tableType" => null,
                 'data' => []
             ],
             [
                 'id' => 10,
-                'type' => 'text',
+                'type' => 'textarea',
                 'question' => 'Breve observación entorno a la visita',
                 'description' => null,
-                "tableType" => null,
                 'data' => []
             ],
             [
                 'id' => 11,
-                'type' => 'text',
+                'type' => 'textarea',
                 'question' => 'Tarea y/o Pendiente',
                 'description' => null,
-                "tableType" => null,
                 'data' => []
             ],
             [
@@ -113,7 +114,6 @@ class SurveyQuestionSeeder extends Seeder
                 'type' => 'date',
                 'question' => 'Hora de Inicio',
                 'description' => null,
-                "tableType" => "HoraDeInicio",
                 'data' => []
             ],
             [
@@ -121,7 +121,6 @@ class SurveyQuestionSeeder extends Seeder
                 'type' => 'date',
                 'question' => 'Hora de Finalización',
                 'description' => null,
-                "tableType" => "HoraDeFin",
                 'data' => []
             ]
         ];
@@ -133,8 +132,23 @@ class SurveyQuestionSeeder extends Seeder
                 'type'                 => $question['type'],
                 'question'             => $question['question'],
                 'data'                 => $question['data'],
+                'options_source'       => $question['options_source'] ?? 'static',
+                'options_model'        => $question['options_model'] ?? null,
+                'options_label_column' => $question['options_label_column'] ?? null,
                 'survey_id'            => $survey->id
             ]);
         }
+
+        SurveyQuestion::find([2, 3, 4])->each(function ($question) {
+            $question->update([
+                'parent_id' => 1,
+                'triggering_answer' => 'No'
+            ]);
+        });
+
+        SurveyQuestion::find(9)->update([
+            'parent_id' => 8,
+            'triggering_answer' => 'Si'
+        ]);
     }
 }

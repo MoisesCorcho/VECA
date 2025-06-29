@@ -39,5 +39,7 @@ class SurveySeeder extends Seeder
             $seller->survey_id = $survey->id;
             $seller->save();
         }
+
+        User::role('Seller')->update(['survey_id' => $survey->id]);
     }
 }
