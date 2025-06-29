@@ -25,7 +25,7 @@
                         @endif
 
 
-                        <x-survey.question :question="$question" :surveyQuestionsTypeEnum="$surveyQuestionsTypeEnum"></x-survey.question>
+                        <x-survey.question :question="$question" :surveyQuestionsTypeEnum="$surveyQuestionsTypeEnum" :answers="$answers"></x-survey.question>
 
                         {{-- Content --}}
                     </x-filament::section>

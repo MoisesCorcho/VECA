@@ -1,4 +1,4 @@
-@props(['surveyQuestionsTypeEnum'])
+@props(['surveyQuestionsTypeEnum', 'answers'])
 
 <div class="mb-5">
     @switch($question->type)
@@ -11,7 +11,7 @@
         @break
 
         @case($surveyQuestionsTypeEnum::TYPE_SELECT->value)
-            <x-forms.select :question="$question" />
+            <x-forms.select :question="$question" :answers="$answers" />
         @break
 
         @case($surveyQuestionsTypeEnum::TYPE_RADIO->value)
