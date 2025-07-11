@@ -23,6 +23,13 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\SurveyResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\SurveyResource\RelationManagers;
+use App\Models\SurveyQuestion;
+use Filament\Forms\Set;
+use Illuminate\Support\Str;
+use App\Enums\ModelOptionSourceEnum;
+use App\Services\SurveyQuestionService;
+use App\Models\Organization;
+use App\Models\Member;
 
 class SurveyResource extends Resource
 {
@@ -45,7 +52,8 @@ class SurveyResource extends Resource
                             ->required(),
                         TextInput::make('description'),
                         Toggle::make('status')
-                            ->required(),
+                            ->required()
+                            ->default(true),
                     ]),
 
                 Section::make()
@@ -56,11 +64,86 @@ class SurveyResource extends Resource
                                 Select::make('type')
                                     ->live()
                                     ->options(SurveyQuestionsTypeEnum::keyValuesCombined())
-                                    ->required(),
+                                    ->required()
+                                    ->afterStateUpdated(function (Set $set, Get $get) {
+                                        // If the type is not a type without options (text, textarea, date) and the data is empty, set the data to an empty array with a single option
+                                        // This is to prevent the user from creating a question without any options
+                                        if (!in_array($get('type'), SurveyQuestionsTypeEnum::nonOptionsTypes() ?? []) && !$get('data')) {
+                                            $set('data', [(string) Str::uuid() => ['option' => '']]);
+                                        }
+                                    }),
                                 TextInput::make('question')
                                     ->required(),
+
                                 TextInput::make('description')
                                     ->columnSpanFull(),
+
+                                Select::make('parent_id')
+                                    ->label(__('Parent question'))
+                                    ->live()
+                                    ->options(fn($record) => $record?->survey->questions->where('type', 'select')->where('question', '!=', $record->question)->pluck('question', 'id'))
+                                    ->visible(fn($record) => $record)
+                                    ->disabled(function (Get $get, $state, $context, $record) {
+                                        return collect($get('../../questions'))
+                                            ->contains('parent_id', $record?->id);
+                                    })
+                                    ->afterStateUpdated(function (Set $set) {
+                                        $set('triggering_answer', null);
+                                    })
+                                    ->nullable(),
+
+                                Select::make('triggering_answer')
+                                    ->label(__('Triggering answer'))
+                                    ->visible(fn(Get $get, $record): bool => filled($get('parent_id')) && $record)
+                                    ->options(function (Get $get) {
+                                        return collect(SurveyQuestion::find($get('parent_id'))?->data)
+                                            ->mapWithKeys(function ($item) {
+                                                return [$item => $item];
+                                            });
+                                    })
+                                    ->required(),
+
+                                Section::make()
+                                    ->schema([
+                                        Select::make('options_source')
+                                            ->label(__('Options source'))
+                                            ->live()
+                                            ->options([
+                                                'static' => __('Static'),
+                                                'database' => __('Database'),
+                                            ])
+                                            ->default('static'),
+
+                                        Select::make('options_model')
+                                            ->label(__('Options model'))
+                                            ->live()
+                                            ->options(function (Get $get) {
+
+                                                $organizationQuestion = collect($get('../../questions'))
+                                                    ->contains('options_model', Organization::class);
+
+                                                if (!$organizationQuestion) {
+                                                    return collect(ModelOptionSourceEnum::keyValuesCombined())
+                                                        ->except(Member::class)
+                                                        ->toArray();
+                                                }
+
+                                                return ModelOptionSourceEnum::keyValuesCombined();
+                                            })
+                                            ->visible(fn(Get $get): bool => $get('options_source') == 'database'),
+
+                                        Select::make('options_label_column')
+                                            ->label(__('Options label column'))
+                                            ->options(function (Get $get) {
+                                                $sqService = app(SurveyQuestionService::class);
+                                                return $get('options_model') ? $sqService->getOptionsLabel($get('options_model')) : [];
+                                            })
+                                            ->required()
+                                            ->visible(fn(Get $get): bool => (bool) $get('options_model')),
+                                    ])
+                                    ->columns(3)
+                                    ->visible(fn(Get $get): bool => $get('type') == SurveyQuestionsTypeEnum::TYPE_SELECT->value),
+
                                 Section::make()
                                     ->schema([
                                         Repeater::make('data')
@@ -71,14 +154,38 @@ class SurveyResource extends Resource
                                             )
                                             ->addActionLabel('Add Option')
                                             ->reorderable(true)
-                                            ->reorderableWithButtons(),
+                                            ->reorderableWithButtons()
+                                            ->deletable(fn(Get $get) => collect($get('data'))->count() > 1)
+                                            ->defaultItems(1),
                                     ])
-                                    ->visible(fn(Get $get): bool => !in_array($get('type'), SurveyQuestionsTypeEnum::nonOptionsTypes()) && !empty($get('type')))
+                                    ->visible(function (Get $get): bool {
+                                        return !in_array($get('type'), SurveyQuestionsTypeEnum::nonOptionsTypes()) && !empty($get('type') && $get('options_source') == 'static');
+                                    })
                             ])
+                            ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
+                                if (in_array($data['type'], SurveyQuestionsTypeEnum::nonOptionsTypes() ?? [])) {
+                                    $data['data'] = null;
+                                }
+
+                                return $data;
+                            })
+                            ->mutateRelationshipDataBeforeSaveUsing(function (array $data): array {
+                                // If the question type is not selected, then we set the triggering answer to null.
+                                if (empty($data['parent_id'])) {
+                                    $data['triggering_answer'] = null;
+                                }
+
+                                // If the question type is not an option type, then we set the data to null.
+                                if (in_array($data['type'], SurveyQuestionsTypeEnum::nonOptionsTypes() ?? [])) {
+                                    $data['data'] = null;
+                                }
+
+                                return $data;
+                            })
                             ->addActionLabel('Add Question')
                             ->cloneable()
-                            ->reorderable(true)
-                            ->reorderableWithButtons()
+                            ->reorderable(false)
+                            ->reorderableWithButtons(false)
                             ->columns(2)
                     ]),
             ]);

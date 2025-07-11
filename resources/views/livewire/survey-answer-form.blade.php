@@ -12,20 +12,24 @@
 
         <form wire:submit.prevent="save" class="space-y-4">
             @foreach ($survey->questions as $question)
-                <x-filament::section>
-                    <x-slot name="heading">
-                        {{ $question->question ?? 'Question without title' }}
-                    </x-slot>
-
-                    @if ($question->description)
-                        <x-slot name="description">
-                            {{ $question->description }}
+                @if (!$question->parent_id || ($question->parent_id && $answers[$question->parent_id] == $question->triggering_answer))
+                    <x-filament::section>
+                        <x-slot name="heading">
+                            {{ $question->question ?? 'Question without title' }}
                         </x-slot>
-                    @endif
 
-                    {{-- Content --}}
-                    <x-survey.question :question="$question" :surveyQuestionsTypeEnum="$surveyQuestionsTypeEnum"></x-survey.question>
-                </x-filament::section>
+                        @if ($question->description)
+                            <x-slot name="description">
+                                {{ $question->description }}
+                            </x-slot>
+                        @endif
+
+
+                        <x-survey.question :question="$question" :surveyQuestionsTypeEnum="$surveyQuestionsTypeEnum" :answers="$answers"></x-survey.question>
+
+                        {{-- Content --}}
+                    </x-filament::section>
+                @endif
             @endforeach
 
             <x-filament::button wire:click="save" icon="heroicon-m-inbox-arrow-down" icon-position="after">
