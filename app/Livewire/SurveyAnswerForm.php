@@ -11,12 +11,20 @@ use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use App\Models\Visit;
 use App\Enums\VisitStatusEnum;
+use Livewire\Attributes\Computed;
+use Illuminate\Database\Eloquent\Collection;
 
 class SurveyAnswerForm extends Component
 {
     public Survey $survey;
     public Visit $visit;
     public array $answers = [];
+
+    #[Computed]
+    public function surveyQuestions(): Collection
+    {
+        return $this->survey->questions()->with('parent')->get();
+    }
 
     //Enums
     public $surveyQuestionsTypeEnum;
@@ -40,9 +48,48 @@ class SurveyAnswerForm extends Component
 
     public function rules(): array
     {
-        return [
-            'answers.*' => 'required',
-        ];
+        return $this->buildSurveyValidationRules();
+    }
+
+    /**
+     * Builds the dynamic validation rules for the survey answers
+     * based on question dependencies.
+     */
+    private function buildSurveyValidationRules(): array
+    {
+        $rules = [];
+
+        foreach ($this->surveyQuestions as $question) {
+
+            // Case 1: The question is a top-level question (no parent).
+            // It should always be required.
+            if (is_null($question->parent_id)) {
+                $rules['answers.' . $question->id] = 'required';
+                continue;
+            }
+
+            // Case 2: The question has a parent and is dependent.
+            $parentQuestion = $question->parent;
+
+            // If the parent relationship is broken,
+            // the dependent question cannot be answered, so it's not required.
+            if (!$parentQuestion) {
+                $rules['answers.' . $question->id] = 'nullable';
+                continue;
+            }
+
+            // Get the user's answer to the parent question.
+            $parentAnswer = $this->answers[$parentQuestion->id] ?? null;
+
+            // Check if the parent's answer matches the value that triggers this question's visibility.
+            if ($parentAnswer == $question->triggering_answer) {
+                $rules['answers.' . $question->id] = 'required';
+            } else {
+                $rules['answers.' . $question->id] = 'nullable';
+            }
+        }
+
+        return $rules;
     }
 
     protected function messages(): array
