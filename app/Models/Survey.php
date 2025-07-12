@@ -36,6 +36,11 @@ class Survey extends Model
         return $this->hasMany(User::class, 'survey_id');
     }
 
+    public function visits(): HasMany
+    {
+        return $this->hasMany(Visit::class);
+    }
+
     #[Scope]
     public function active()
     {

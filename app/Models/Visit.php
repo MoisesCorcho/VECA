@@ -45,4 +45,9 @@ class Visit extends Model
     {
         return $this->belongsTo(NoVisitReason::class, 'non_visit_reason_id');
     }
+
+    public function survey(): BelongsTo
+    {
+        return $this->belongsTo(Survey::class);
+    }
 }
