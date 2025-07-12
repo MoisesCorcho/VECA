@@ -10,6 +10,8 @@ class SurveyQuestionAnswer extends Model
     /** @use HasFactory<\Database\Factories\SurveyQuestionAnswerFactory> */
     use HasFactory;
 
+    public $timestamps = false;
+
     protected $fillable = [
         'answer',
         'survey_question_id',
