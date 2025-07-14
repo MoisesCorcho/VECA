@@ -26,6 +26,10 @@
             <x-forms.input :question="$question" type="date" />
         @break
 
+        @case($surveyQuestionsTypeEnum::TYPE_TIME->value)
+            <x-forms.input :question="$question" type="time" />
+        @break
+
         @default
             <p class="mt-3 text-sm text-red-500 p-2 bg-red-50 dark:bg-red-900/20 rounded">
                 Unsupported question type

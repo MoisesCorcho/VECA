@@ -111,14 +111,14 @@ class SurveyQuestionSeeder extends Seeder
             ],
             [
                 'id' => 12,
-                'type' => 'date',
+                'type' => 'time',
                 'question' => 'Hora de Inicio',
                 'description' => null,
                 'data' => []
             ],
             [
                 'id' => 13,
-                'type' => 'date',
+                'type' => 'time',
                 'question' => 'Hora de Finalización',
                 'description' => null,
                 'data' => []

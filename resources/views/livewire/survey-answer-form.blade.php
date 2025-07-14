@@ -24,7 +24,6 @@
                             </x-slot>
                         @endif
 
-
                         <x-survey.question :question="$question" :surveyQuestionsTypeEnum="$surveyQuestionsTypeEnum" :answers="$answers"></x-survey.question>
 
                         {{-- Content --}}
