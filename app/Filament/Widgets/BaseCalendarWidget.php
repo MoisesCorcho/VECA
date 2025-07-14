@@ -106,13 +106,13 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
 
         $schema[] = $this->getStatusField();
 
-        if ($this->shouldShowOrganizationField()) {
-            $schema[] = $this->getOrganizationField();
-        }
-
         if ($this->shouldShowUserField()) {
             $schema[] = $this->getUserField();
             $schema[] = $this->getSurveyField();
+        }
+
+        if ($this->shouldShowOrganizationField()) {
+            $schema[] = $this->getOrganizationField();
         }
 
         $schema = array_merge($schema, $this->getNonVisitFields());
@@ -193,7 +193,18 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
     {
         return Forms\Components\Select::make('organization_id')
             ->label(__('Organization'))
-            ->relationship('organization', 'name')
+            ->options(function (Get $get) {
+                $userId = $get('user_id');
+
+                if ($userId) {
+                    return User::find($userId)
+                        ?->organizations
+                        ->pluck('name', 'id')
+                        ->toArray() ?? [];
+                }
+
+                return [];
+            })
             ->searchable()
             ->preload()
             ->live()
@@ -208,10 +219,10 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
     {
         return Forms\Components\Select::make('user_id')
             ->label(__('Assigned User'))
-            ->relationship('user', 'name')
             ->searchable()
             ->preload()
             ->live()
+            ->options(fn() => User::role('Seller')->pluck('name', 'id'))
             ->afterStateUpdated(function ($state, Set $set, Get $get) {
                 $this->updateUserFields($state, $set);
 
