@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Organization;
 use App\Models\NoVisitReason;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Survey;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Visit>
@@ -28,6 +29,7 @@ class VisitFactory extends Factory
             'organization_id' => Organization::factory(),
             'user_id' => User::factory(),
             'non_visit_reason_id' => NoVisitReason::factory(),
+            'survey_id' => Survey::factory(),
         ];
     }
 

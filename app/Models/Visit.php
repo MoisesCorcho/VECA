@@ -19,6 +19,7 @@ class Visit extends Model
         'status',
         'organization_id',
         'user_id',
+        'survey_id',
         'non_visit_reason_id',
     ];
 

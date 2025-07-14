@@ -31,15 +31,36 @@ class VisitSeeder extends Seeder
 
         foreach ($data as $item) {
             $user = User::where('dni', $item['dni'])->first();
-            $organization = Organization::where('nit', $item['organization_nit'])->first();
 
-            Visit::factory()
-                ->count(20)
-                ->visited()
-                ->for($user)
-                ->for($organization)
-                ->for($survey)
-                ->create();
+            if (!$user) {
+                $this->command->info("User with DNI {$item['dni']} not found. Skipping visits for this user.\n");
+                continue;
+            }
+
+            $userOrganizations = $user->organizations;
+
+            if ($userOrganizations->isEmpty()) {
+                $this->command->info("User with DNI {$item['dni']} has no organizations. Skipping visits for this user.\n");
+                continue;
+            }
+
+            for ($i = 0; $i < 20; $i++) {
+                $randomOrganization = fake()->randomElement($userOrganizations);
+
+                Visit::factory()
+                    ->visited()
+                    ->for($user)
+                    ->for($randomOrganization)
+                    ->for($survey)
+                    ->create();
+
+                Visit::factory()
+                    ->scheduled()
+                    ->for($user)
+                    ->for($randomOrganization)
+                    ->for($survey)
+                    ->create();
+            }
         }
     }
 }
