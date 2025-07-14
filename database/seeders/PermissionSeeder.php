@@ -35,6 +35,6 @@ class PermissionSeeder extends Seeder
         $admin->syncPermissions($adminPermissions);
         $seller->syncPermissions($sellerPermissions);
 
-        $this->command->info('Roles y permisos creados correctamente.');
+        $this->command->info('Roles and permissions have been created successfully.');
     }
 }
