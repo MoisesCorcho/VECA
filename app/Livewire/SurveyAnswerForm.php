@@ -124,7 +124,7 @@ class SurveyAnswerForm extends Component
                 $answers[] = [
                     'survey_answer_id' => $savedAnswer->id,
                     'survey_question_id' => $questionId,
-                    'answer' => $answer,
+                    'answer' => is_null($answer) ? json_encode("") : json_encode($answer),
                 ];
             }
         }

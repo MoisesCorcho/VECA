@@ -57,6 +57,7 @@ class CalendarWidget extends BaseCalendarWidget
     protected function mutateCreateFormData(array $data): array
     {
         $data['user_id'] = Auth::id();
+        $data['survey_id'] = Auth::user()->assignedSurvey?->id;
         return parent::mutateCreateFormData($data);
     }
 

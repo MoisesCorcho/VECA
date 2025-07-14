@@ -14,6 +14,9 @@ use App\Models\User;
 use App\Helpers\FilamentHelpers;
 use App\Helpers\Filament\CommonFormInputs;
 use Carbon\Carbon;
+use Filament\Forms\Get;
+use Filament\Notifications\Notification;
+use Filament\Forms\Set;
 
 abstract class BaseCalendarWidget extends FullCalendarWidget
 {
@@ -47,6 +50,17 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
             $actions[] = Actions\CreateAction::make()
                 ->mutateFormDataUsing(function (array $data): array {
                     return $this->mutateCreateFormData($data);
+                })
+                ->before(function (Actions\CreateAction $action, $data) {
+
+                    $user = User::find($data['user_id']);
+
+                    if (! $user->assignedSurvey) {
+                        Notification::make()->title('User does not have an assigned survey')->danger()->send();
+
+                        // Stop/Halt the action
+                        $action->halt();
+                    }
                 });
         }
 
@@ -92,12 +106,13 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
 
         $schema[] = $this->getStatusField();
 
-        if ($this->shouldShowOrganizationField()) {
-            $schema[] = $this->getOrganizationField();
-        }
-
         if ($this->shouldShowUserField()) {
             $schema[] = $this->getUserField();
+            $schema[] = $this->getSurveyField();
+        }
+
+        if ($this->shouldShowOrganizationField()) {
+            $schema[] = $this->getOrganizationField();
         }
 
         $schema = array_merge($schema, $this->getNonVisitFields());
@@ -178,7 +193,18 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
     {
         return Forms\Components\Select::make('organization_id')
             ->label(__('Organization'))
-            ->relationship('organization', 'name')
+            ->options(function (Get $get) {
+                $userId = $get('user_id');
+
+                if ($userId) {
+                    return User::find($userId)
+                        ?->organizations
+                        ->pluck('name', 'id')
+                        ->toArray() ?? [];
+                }
+
+                return [];
+            })
             ->searchable()
             ->preload()
             ->live()
@@ -193,15 +219,26 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
     {
         return Forms\Components\Select::make('user_id')
             ->label(__('Assigned User'))
-            ->relationship('user', 'name')
             ->searchable()
             ->preload()
             ->live()
-            ->afterStateUpdated(function ($state, callable $set) {
+            ->options(fn() => User::role('Seller')->pluck('name', 'id'))
+            ->afterStateUpdated(function ($state, Set $set, Get $get) {
                 $this->updateUserFields($state, $set);
+
+                $user = User::find($get('user_id'));
+
+                if ($user) {
+                    $set('survey_id', $user?->assignedSurvey?->id);
+                }
             })
             ->required()
             ->disabled($this->getUserDisabledCondition());
+    }
+
+    protected function getSurveyField()
+    {
+        return Forms\Components\Hidden::make('survey_id');
     }
 
     protected function getNonVisitFields(): array
@@ -351,7 +388,7 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
         }
     }
 
-    protected function updateUserFields($state, callable $set): void
+    protected function updateUserFields($state, Set $set): void
     {
         $set('user.name', null);
         $set('user.email', null);

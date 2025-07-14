@@ -12,7 +12,6 @@ class OrganizationSeeder extends Seeder
 {
     public function run()
     {
-        //Kaled
         $organizationsMaira = [
 
             // Organization 1
@@ -162,7 +161,6 @@ class OrganizationSeeder extends Seeder
 
         ];
 
-        //Veronica
         $organizationsVeronica = [
 
             // Organization 1
@@ -349,7 +347,6 @@ class OrganizationSeeder extends Seeder
 
         ];
 
-        //Hector
         $organizationsHector = [
 
             // Organization 1
@@ -507,6 +504,53 @@ class OrganizationSeeder extends Seeder
             $organization->addresses()->create([
                 'street' => $organizationH['address'],
                 'city' => $organizationH['city'],
+                'state' => '',
+                'country' => '',
+                'zip_code' => '',
+            ]);
+        }
+
+        $organizations = [
+            [
+                'name'      => 'Droguerias la botica',
+                'nit'       => '1004731778',
+                'address'   => 'Calle 35 No 14-49 / Barrio La Floresta',
+                'cellphone' => '3165893612',
+                'email'     => 'drogueriabotica@gmail.com',
+                'city'      => 'Montería'
+            ],
+            [
+                'name'      => 'Droguerias la rebaja',
+                'nit'       => '1004731745',
+                'address'   => 'Calle 35 No 14-49 / Barrio La Floresta',
+                'cellphone' => '3155893667',
+                'email'     => 'drogueriarebaja@gmail.com',
+                'city'      => 'Montería'
+            ],
+            [
+                'name'      => 'Drogueria la Economia',
+                'nit'       => '1004731734',
+                'address'   => 'Calle 35 No 14-49 / Barrio La Floresta',
+                'cellphone' => '3165893698',
+                'email'     => 'drogueriaeconomia@gmail.com',
+                'city'      => 'Montería'
+            ],
+        ];
+
+        foreach ($organizations as $organization) {
+
+            $newOrganization = Organization::create([
+                'name'      => $organization['name'],
+                'nit'       => $organization['nit'],
+                'cellphone' => $organization['cellphone'],
+                'email'     => $organization['email'],
+            ]);
+
+            $newOrganization->user()->associate($seller1);
+
+            $newOrganization->addresses()->create([
+                'street' => $organization['address'],
+                'city' => $organization['city'],
                 'state' => '',
                 'country' => '',
                 'zip_code' => '',

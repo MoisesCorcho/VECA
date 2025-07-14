@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Visit;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -30,5 +31,7 @@ class DatabaseSeeder extends Seeder
         $this->call(MemberSeeder::class);
         $this->call(SurveySeeder::class);
         $this->call(SurveyQuestionSeeder::class);
+        $this->call(VisitSeeder::class);
+        $this->call(SurveyQuestionAnswerSeeder::class);
     }
 }
