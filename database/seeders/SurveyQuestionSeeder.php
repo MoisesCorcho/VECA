@@ -107,6 +107,7 @@ class SurveyQuestionSeeder extends Seeder
                 'type' => 'textarea',
                 'question' => 'Tarea y/o Pendiente',
                 'description' => null,
+                'is_task_trigger' => true,
                 'data' => []
             ],
             [
@@ -135,6 +136,7 @@ class SurveyQuestionSeeder extends Seeder
                 'options_source'       => $question['options_source'] ?? 'static',
                 'options_model'        => $question['options_model'] ?? null,
                 'options_label_column' => $question['options_label_column'] ?? null,
+                'is_task_trigger'      => $question['is_task_trigger'] ?? false,
                 'survey_id'            => $survey->id
             ]);
         }

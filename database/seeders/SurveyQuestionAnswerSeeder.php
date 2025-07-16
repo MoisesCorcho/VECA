@@ -969,7 +969,7 @@ class SurveyQuestionAnswerSeeder extends Seeder
 
                 foreach ($responseData as $questionId => $answer) {
 
-                    $question = SurveyQuestion::where('question', 'like', "%$questionId%")->first();
+                    $question = SurveyQuestion::where('question', 'like', "$questionId")->first();
 
                     if (!$question) {
                         dump("The question was not found. $questionId");
