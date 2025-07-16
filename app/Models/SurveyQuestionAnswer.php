@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SurveyQuestionAnswer extends Model
 {
@@ -23,5 +24,15 @@ class SurveyQuestionAnswer extends Model
         return [
             'answer' => 'array',
         ];
+    }
+
+    public function surveyQuestion(): BelongsTo
+    {
+        return $this->belongsTo(SurveyQuestion::class, 'survey_question_id');
+    }
+
+    public function surveyAnswer(): BelongsTo
+    {
+        return $this->belongsTo(SurveyAnswer::class, 'survey_answer_id');
     }
 }

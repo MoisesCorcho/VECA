@@ -19,7 +19,8 @@ class SurveyQuestion extends Model
         'data',
         'survey_id',
         'parent_id',
-        'triggering_answer'
+        'triggering_answer',
+        'is_task_trigger'
     ];
 
     protected function casts(): array

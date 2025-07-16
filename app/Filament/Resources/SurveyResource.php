@@ -30,6 +30,8 @@ use App\Enums\ModelOptionSourceEnum;
 use App\Services\SurveyQuestionService;
 use App\Models\Organization;
 use App\Models\Member;
+use App\Rules\EnsureOnlyOneTaskTrigger;
+use App\Rules\EnsureAtLeastOneTaskTrigger;
 
 class SurveyResource extends Resource
 {
@@ -75,8 +77,13 @@ class SurveyResource extends Resource
                                 TextInput::make('question')
                                     ->required(),
 
-                                TextInput::make('description')
-                                    ->columnSpanFull(),
+                                TextInput::make('description'),
+
+                                Toggle::make('is_task_trigger')
+                                    ->label('Generates a pending task for the seller')
+                                    ->helperText('If active, a non-empty answer to this question will be considered a pending task in the seller dashboard. Only works in one question per survey.')
+                                    ->onColor('success')
+                                    ->offColor('danger'),
 
                                 Select::make('parent_id')
                                     ->label(__('Parent question'))
@@ -161,6 +168,10 @@ class SurveyResource extends Resource
                                     ->visible(function (Get $get): bool {
                                         return !in_array($get('type'), SurveyQuestionsTypeEnum::nonOptionsTypes()) && !empty($get('type') && $get('options_source') == 'static');
                                     })
+                            ])
+                            ->rules([
+                                new EnsureOnlyOneTaskTrigger,
+                                new EnsureAtLeastOneTaskTrigger
                             ])
                             ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
                                 if (in_array($data['type'], SurveyQuestionsTypeEnum::nonOptionsTypes() ?? [])) {
