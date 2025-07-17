@@ -28,6 +28,7 @@ class SurveyQuestion extends Model
         return [
             'data' => 'array',
             'triggering_answer' => 'array',
+            'is_task_trigger' => 'boolean',
         ];
     }
 

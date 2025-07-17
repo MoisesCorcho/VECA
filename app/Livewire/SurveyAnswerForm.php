@@ -13,6 +13,7 @@ use App\Models\Visit;
 use App\Enums\VisitStatusEnum;
 use Livewire\Attributes\Computed;
 use Illuminate\Database\Eloquent\Collection;
+use App\Services\TaskService;
 
 class SurveyAnswerForm extends Component
 {
@@ -60,6 +61,12 @@ class SurveyAnswerForm extends Component
         $rules = [];
 
         foreach ($this->surveyQuestions as $question) {
+
+            // case 0: The question is a task trigger
+            if ($question->is_task_trigger) {
+                $rules['answers.' . $question->id] = 'nullable';
+                continue;
+            }
 
             // Case 1: The question is a top-level question (no parent).
             // It should always be required.
@@ -134,6 +141,10 @@ class SurveyAnswerForm extends Component
         $this->visit->update([
             'status' => VisitStatusEnum::VISITED
         ]);
+
+        $taskService = app(TaskService::class);
+
+        $taskService->createTasksFromSurveyAnswer($savedAnswer);
 
         Notification::make()
             ->success()
