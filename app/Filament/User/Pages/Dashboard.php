@@ -6,6 +6,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard as BaseDashboard;
 use App\Services\TaskService;
 use App\Models\Task;
+use Livewire\Attributes\On;
 
 class Dashboard extends BaseDashboard
 {
@@ -49,34 +50,20 @@ class Dashboard extends BaseDashboard
         $this->taskStats = $this->taskService->getTaskStats(auth()->id());
     }
 
-    public function markTask(Task $task, string $action): void
-    {
-        $result = match ($action) {
-            'complete' => $this->taskService->completeTask($task->id, $task->user_id),
-            'cancelled' => $this->taskService->cancelTask($task->id, $task->user_id),
-            default => false
-        };
-
-        if (! $result) {
-            Notification::make()
-                ->danger()
-                ->title("Task cannot be marked as $action")
-                ->send();
-
-            return;
-        }
-
-        Notification::make()
-            ->success()
-            ->title("Task marked as $action")
-            ->send();
-
-        $this->loadTasks();
-    }
-
     public function filterByStatus(?string $status): void
     {
         $this->statusFilter = $status;
+        $this->loadTasks();
+    }
+
+    public function confirmMarkTask(Task $task, string $action)
+    {
+        $this->dispatch('mark-task-confirm', task: $task, action: $action);
+    }
+
+    #[On('task-updated')]
+    public function reload()
+    {
         $this->loadTasks();
     }
 }
