@@ -108,7 +108,6 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
 
         if ($this->shouldShowUserField()) {
             $schema[] = $this->getUserField();
-            $schema[] = $this->getSurveyField();
         }
 
         if ($this->shouldShowOrganizationField()) {
@@ -225,20 +224,9 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
             ->options(fn() => User::role('Seller')->pluck('name', 'id'))
             ->afterStateUpdated(function ($state, Set $set, Get $get) {
                 $this->updateUserFields($state, $set);
-
-                $user = User::find($get('user_id'));
-
-                if ($user) {
-                    $set('survey_id', $user?->assignedSurvey?->id);
-                }
             })
             ->required()
             ->disabled($this->getUserDisabledCondition());
-    }
-
-    protected function getSurveyField()
-    {
-        return Forms\Components\Hidden::make('survey_id');
     }
 
     protected function getNonVisitFields(): array

@@ -965,6 +965,7 @@ class SurveyQuestionAnswerSeeder extends Seeder
                     'user_id' => $user->id,
                     'survey_id' => $survey->id,
                     'date' => $visit->visit_date,
+                    'visit_id' => $visit->id
                 ]);
 
                 foreach ($responseData as $questionId => $answer) {

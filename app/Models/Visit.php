@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Enums\VisitStatusEnum;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Visit extends Model
 {
@@ -19,7 +20,6 @@ class Visit extends Model
         'status',
         'organization_id',
         'user_id',
-        'survey_id',
         'non_visit_reason_id',
     ];
 
@@ -47,8 +47,8 @@ class Visit extends Model
         return $this->belongsTo(NoVisitReason::class, 'non_visit_reason_id');
     }
 
-    public function survey(): BelongsTo
+    public function surveyAnswer(): HasOne
     {
-        return $this->belongsTo(Survey::class);
+        return $this->hasOne(SurveyAnswer::class);
     }
 }

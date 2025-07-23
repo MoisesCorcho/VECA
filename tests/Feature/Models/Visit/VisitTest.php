@@ -18,7 +18,6 @@ test('can create a visit', function () {
     $organization = Organization::factory()->create();
     $user = User::factory()->create();
     $noVisitReason = NoVisitReason::factory()->create();
-    $survey = Survey::factory()->create();
 
     $visit = Visit::create([
         'visit_date' => $visitDate,
@@ -27,8 +26,7 @@ test('can create a visit', function () {
         'status' => VisitStatusEnum::RESCHEDULED,
         'organization_id' => $organization->id,
         'user_id' => $user->id,
-        'non_visit_reason_id' => $noVisitReason->id,
-        'survey_id' => $survey->id
+        'non_visit_reason_id' => $noVisitReason->id
     ]);
 
     $visit->refresh();
@@ -51,7 +49,6 @@ test('can update a visit', function () {
     $organization = Organization::factory()->create();
     $user = User::factory()->create();
     $noVisitReason = NoVisitReason::factory()->create();
-    $survey = Survey::factory()->create();
 
     $visit = Visit::create([
         'visit_date' => $visitDate,
@@ -60,8 +57,7 @@ test('can update a visit', function () {
         'status' => VisitStatusEnum::SCHEDULED,
         'organization_id' => $organization->id,
         'user_id' => $user->id,
-        'non_visit_reason_id' => $noVisitReason->id,
-        'survey_id' => $survey->id
+        'non_visit_reason_id' => $noVisitReason->id
     ]);
 
     $visit->update([

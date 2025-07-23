@@ -51,14 +51,12 @@ class VisitSeeder extends Seeder
                     ->visited()
                     ->for($user)
                     ->for($randomOrganization)
-                    ->for($survey)
                     ->create();
 
                 Visit::factory()
                     ->scheduled()
                     ->for($user)
                     ->for($randomOrganization)
-                    ->for($survey)
                     ->create();
             }
         }

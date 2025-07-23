@@ -114,6 +114,7 @@ class SurveyAnswerForm extends Component
         $savedAnswer = $this->survey->answers()->create([
             'date' => now(),
             'user_id' => Auth::id(),
+            'visit_id' => $this->visit->id
         ]);
 
         $answers = [];

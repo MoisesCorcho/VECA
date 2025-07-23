@@ -29,7 +29,6 @@ class VisitFactory extends Factory
             'organization_id' => Organization::factory(),
             'user_id' => User::factory(),
             'non_visit_reason_id' => NoVisitReason::factory(),
-            'survey_id' => Survey::factory(),
         ];
     }
 
