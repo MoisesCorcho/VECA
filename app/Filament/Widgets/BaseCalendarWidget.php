@@ -61,6 +61,8 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
                         // Stop/Halt the action
                         $action->halt();
                     }
+
+                    $this->beforeCreate($action, $data);
                 });
         }
 
@@ -76,7 +78,10 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
                 ->mutateFormDataUsing(function (array $data): array {
                     return $this->mutateEditFormData($data);
                 })
-                ->visible(function (Visit $visit, ?Model $record) {
+                ->before(function (Actions\EditAction $action, $data): void {
+                    $this->beforeEdit($action, $data);
+                })
+                ->visible(function (Visit $visit, ?Model $record): bool {
                     return $this->isEditVisible($visit, $record);
                 });
         }
@@ -147,8 +152,13 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
         return $data;
     }
 
+    protected function beforeCreate(Actions\CreateAction $action, array $data): void {}
+
+    protected function beforeEdit(Actions\EditAction $action, array $data): void {}
+
     protected function isEditVisible(Visit $visit, ?Model $record): bool
     {
+        return true;
         $originalStatus = $record->getOriginal('status') ?? $record->status;
         return !in_array($originalStatus->value, VisitStatusEnum::finalStatuses('string'));
     }
@@ -161,19 +171,19 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
                     ->required()
                     ->label(__('Visit Date'))
                     ->default(now())
-                    ->minDate(now()->startOfDay())
-                    ->disabled($this->getVisitDateDisabledCondition()),
+                    ->minDate(fn(Get $get) => auth()->user()->hasAnyRole(['super_admin', 'Admin']) ? now()->startOfYear()->subYears(1) : now()->startOfDay())
+                    ->disabled(fn($record, Get $get) => $this->getVisitDateDisabledCondition($record, $get)),
 
                 Forms\Components\DatePicker::make('rescheduled_date')
                     ->label(__('Rescheduled Date'))
                     ->nullable()
-                    ->minDate(fn(callable $get) => $get('visit_date') ? Carbon::parse($get('visit_date'))->addDay()->startOfDay() : now()->startOfDay())
-                    ->visible(function (callable $get, ?Model $record) {
+                    ->minDate(fn(Get $get) => $get('visit_date') ? Carbon::parse($get('visit_date'))->addDay()->startOfDay() : now()->startOfDay())
+                    ->visible(function (Get $get, ?Model $record) {
                         if ($record) {
                             return ($record->rescheduled_date || $get('status') === VisitStatusEnum::RESCHEDULED->value);
                         }
                     })
-                    ->required(fn(callable $get) => $get('status') === VisitStatusEnum::RESCHEDULED->value),
+                    ->required(fn(Get $get) => $get('status') === VisitStatusEnum::RESCHEDULED->value),
             ]);
     }
 
@@ -182,10 +192,20 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
         return Forms\Components\Select::make('status')
             ->label(__('Status'))
             ->live()
-            ->options(fn(callable $get, callable $set, ?Model $record) => $this->getStatusOptions($get, $set, $record))
+            ->options(fn(Get $get, Set $set, ?Model $record) => $this->getStatusOptions($get, $set, $record))
             ->default(VisitStatusEnum::SCHEDULED->value)
             ->required()
-            ->disabled($this->getStatusDisabledCondition());
+            ->disabled(fn($record, Get $get) => $this->getStatusDisabledCondition($record, $get))
+            ->hint(function (Get $get, ?Model $record) {
+                $newStatus = $get('status');
+
+                if (! $record) return null;
+
+                $visit = $record->fill(['status' => $newStatus]);
+
+                return $visit->isRevertingVisitedStatusWithSurvey() ? __('Be careful! Changing the status from "Visited" will delete the associated survey answer when saved.') : null;
+            })
+            ->hintColor('warning');
     }
 
     protected function getOrganizationField()
@@ -207,11 +227,11 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
             ->searchable()
             ->preload()
             ->live()
-            ->afterStateUpdated(function ($state, callable $set) {
+            ->afterStateUpdated(function ($state, Set $set) {
                 $this->updateOrganizationFields($state, $set);
             })
             ->required()
-            ->disabled($this->getOrganizationDisabledCondition());
+            ->disabled(fn($record, Get $get) => $this->getOrganizationDisabledCondition($record, $get));
     }
 
     protected function getUserField()
@@ -224,9 +244,10 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
             ->options(fn() => User::role('Seller')->pluck('name', 'id'))
             ->afterStateUpdated(function ($state, Set $set, Get $get) {
                 $this->updateUserFields($state, $set);
+                $set('organization_id', null);
             })
-            ->required()
-            ->disabled($this->getUserDisabledCondition());
+            ->disabled(fn($record, Get $get) => $this->getUserDisabledCondition($record, $get))
+            ->required();
     }
 
     protected function getNonVisitFields(): array
@@ -237,14 +258,16 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
                 ->relationship('nonVisitReason', 'reason')
                 ->searchable()
                 ->preload()
-                ->visible(fn(callable $get) => in_array($get('status'), [VisitStatusEnum::CANCELED->value, VisitStatusEnum::NOT_VISITED->value]))
-                ->required(fn(callable $get) => in_array($get('status'), [VisitStatusEnum::CANCELED->value, VisitStatusEnum::NOT_VISITED->value])),
+                ->visible(fn(Get $get) => in_array($get('status'), [VisitStatusEnum::CANCELED->value, VisitStatusEnum::NOT_VISITED->value]))
+                ->required(fn(Get $get) => in_array($get('status'), [VisitStatusEnum::CANCELED->value, VisitStatusEnum::NOT_VISITED->value]))
+                ->disabled(fn($record, Get $get) => $this->getNonVisitReasonDisabledCondition($record, $get)),
 
             Forms\Components\Textarea::make('non_visit_description')
                 ->label(__('Non Visit Description'))
                 ->rows(3)
-                ->visible(fn(callable $get) => in_array($get('status'), [VisitStatusEnum::CANCELED->value, VisitStatusEnum::NOT_VISITED->value]))
-                ->required(fn(callable $get) => in_array($get('status'), [VisitStatusEnum::CANCELED->value, VisitStatusEnum::NOT_VISITED->value])),
+                ->visible(fn(Get $get) => in_array($get('status'), [VisitStatusEnum::CANCELED->value, VisitStatusEnum::NOT_VISITED->value]))
+                ->required(fn(Get $get) => in_array($get('status'), [VisitStatusEnum::CANCELED->value, VisitStatusEnum::NOT_VISITED->value]))
+                ->disabled(fn($record, Get $get) => $this->getNonVisitDescriptionDisabledCondition($record, $get)),
         ];
     }
 
@@ -285,7 +308,7 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
             CommonFormInputs::displayOnlyTextInput(
                 'organization.address',
                 __('Organization Address'),
-                function (callable $get) {
+                function (Get $get) {
                     $organizationId = $get('organization_id');
                     if ($organizationId) {
                         return Organization::find($organizationId)?->addresses->first()?->fullAddress;
@@ -317,38 +340,37 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
         ];
     }
 
-    protected function getVisitDateDisabledCondition()
+    protected function getVisitDateDisabledCondition(Visit|null $visit, Get|null $get): bool
     {
-        return FilamentHelpers::shouldDisable(
-            disabledOnOriginalStatuses: VisitStatusEnum::finalStatuses('string', [VisitStatusEnum::SCHEDULED]),
-            disabledOnCurrentStatuses: VisitStatusEnum::finalStatuses('string', [VisitStatusEnum::RESCHEDULED, '']),
-        );
+        return false;
     }
 
-    protected function getStatusDisabledCondition()
+    protected function getStatusDisabledCondition(Visit|null $visit, Get|null $get): bool
     {
-        return FilamentHelpers::shouldDisable(
-            disabledOnOriginalStatuses: VisitStatusEnum::finalStatuses('string')
-        );
+        return false;
     }
 
-    protected function getOrganizationDisabledCondition()
+    protected function getOrganizationDisabledCondition(Visit|null $visit, Get|null $get): bool
     {
-        return FilamentHelpers::shouldDisable(
-            disabledOnOriginalStatuses: [VisitStatusEnum::RESCHEDULED->value],
-            disabledOnCurrentStatuses: VisitStatusEnum::finalStatuses('string', [VisitStatusEnum::RESCHEDULED]),
-        );
+        return false;
     }
 
-    protected function getUserDisabledCondition()
+    protected function getUserDisabledCondition(Visit|null $visit, Get|null $get): bool
     {
-        return FilamentHelpers::shouldDisable(
-            disabledOnOriginalStatuses: [VisitStatusEnum::RESCHEDULED->value],
-            disabledOnCurrentStatuses: VisitStatusEnum::finalStatuses('string'),
-        );
+        return false;
     }
 
-    protected function getStatusOptions(callable $get, callable $set, ?Model $record): array
+    protected function getNonVisitReasonDisabledCondition(Visit|null $visit, Get|null $get): bool
+    {
+        return false;
+    }
+
+    protected function getNonVisitDescriptionDisabledCondition(Visit|null $visit, Get|null $get): bool
+    {
+        return false;
+    }
+
+    protected function getStatusOptions(Get $get, Set $set, ?Model $record): array
     {
         return collect(VisitStatusEnum::keyValuesCombined())
             ->when(!$record, fn($collection) => $collection->forget(VisitStatusEnum::RESCHEDULED->value))
@@ -356,7 +378,7 @@ abstract class BaseCalendarWidget extends FullCalendarWidget
             ->all();
     }
 
-    protected function updateOrganizationFields($state, callable $set): void
+    protected function updateOrganizationFields($state, Set $set): void
     {
         $set('organization.name', null);
         $set('organization.email', null);
