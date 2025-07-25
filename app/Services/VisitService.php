@@ -20,6 +20,23 @@ class VisitService
         if ($visit->isStatusChangingTo(VisitStatusEnum::VISITED) && !$visit->hasSurveyAnswer()) {
             $this->throwValidationError();
         }
+
+        $this->handleNonVisitFields($visit);
+    }
+
+    public function handleNonVisitFields(Visit $visit): void
+    {
+        if ($visit->shouldClearNonVisitFields()) {
+            $this->clearNonVisitFields($visit);
+        }
+    }
+
+    private function clearNonVisitFields(Visit $visit): void
+    {
+        $visit->update([
+            'non_visit_reason_id' => null,
+            'non_visit_description' => null,
+        ]);
     }
 
     private function throwValidationError(): void

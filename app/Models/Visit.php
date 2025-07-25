@@ -107,4 +107,18 @@ class Visit extends Model
     {
         return ! $this->hadStatus($status) && $this->hasStatus($status);
     }
+
+    /**
+     * Checks if the visit should clear its non visit fields.
+     *
+     * A visit should clear its non visit fields if it was "not visited" or "canceled",
+     * and it currently has a non visit description or reason.
+     *
+     * @return bool True if the visit should clear its non visit fields, false otherwise.
+     */
+    public function shouldClearNonVisitFields(): bool
+    {
+        return ! in_array($this->status, [VisitStatusEnum::NOT_VISITED, VisitStatusEnum::CANCELED], true)
+            && ($this->non_visit_description || $this->non_visit_reason_id);
+    }
 }
