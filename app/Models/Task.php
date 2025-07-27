@@ -14,12 +14,18 @@ class Task extends Model
     protected $fillable = [
         'title',
         'status',
-        'user_id'
+        'user_id',
+        'survey_question_answer_id'
     ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function surveyQuestionAnswer(): BelongsTo
+    {
+        return $this->belongsTo(SurveyQuestionAnswer::class);
     }
 
     public function scopePending($query): Builder

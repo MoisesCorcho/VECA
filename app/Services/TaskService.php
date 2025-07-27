@@ -32,6 +32,7 @@ class TaskService
             'title' => $questionAnswer->answer,
             'status' => 'pending',
             'user_id' => $questionAnswer->surveyAnswer->user_id,
+            'survey_question_answer_id' => $questionAnswer->id
         ]);
     }
 
