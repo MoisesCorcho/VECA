@@ -32,6 +32,7 @@ use App\Models\Organization;
 use App\Models\Member;
 use App\Rules\EnsureOnlyOneTaskTrigger;
 use App\Rules\EnsureAtLeastOneTaskTrigger;
+use App\Rules\CheckboxQuestionCannotBeTask;
 
 class SurveyResource extends Resource
 {
@@ -171,7 +172,8 @@ class SurveyResource extends Resource
                             ])
                             ->rules([
                                 new EnsureOnlyOneTaskTrigger,
-                                new EnsureAtLeastOneTaskTrigger
+                                new EnsureAtLeastOneTaskTrigger,
+                                new CheckboxQuestionCannotBeTask
                             ])
                             ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
                                 if (in_array($data['type'], SurveyQuestionsTypeEnum::nonOptionsTypes() ?? [])) {
