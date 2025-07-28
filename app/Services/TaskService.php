@@ -6,6 +6,7 @@ use App\Models\Task;
 use App\Models\SurveyAnswer;
 use App\Models\SurveyQuestionAnswer;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class TaskService
 {
@@ -26,7 +27,7 @@ class TaskService
         }
     }
 
-    private function createTask(SurveyQuestionAnswer $questionAnswer): Task
+    public function createTask(SurveyQuestionAnswer $questionAnswer): Task
     {
         return Task::create([
             'title' => $questionAnswer->answer,
@@ -36,13 +37,13 @@ class TaskService
         ]);
     }
 
-    public function getTasksForUser(int $userId, ?string $status): Collection
+    public function getTasksForUser(int $userId, ?string $status): LengthAwarePaginator
     {
         return Task::query()
             ->forUser($userId)
             ->filterByStatus($status)
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(10);
     }
 
     public function completeTask(int $taskId, int $userId): bool

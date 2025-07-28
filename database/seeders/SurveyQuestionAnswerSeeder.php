@@ -9,6 +9,8 @@ use App\Models\SurveyAnswer;
 use App\Models\SurveyQuestionAnswer;
 use App\Models\Visit;
 use App\Models\SurveyQuestion;
+use App\Enums\VisitStatusEnum;
+use App\Services\TaskService;
 
 class SurveyQuestionAnswerSeeder extends Seeder
 {
@@ -977,12 +979,21 @@ class SurveyQuestionAnswerSeeder extends Seeder
                         continue;
                     }
 
-                    SurveyQuestionAnswer::create([
+                    $questionAnswer = SurveyQuestionAnswer::create([
                         'survey_answer_id' => $surveyAnswer->id,
                         'survey_question_id' => $question->id,
                         'answer' => $answer,
                     ]);
+
+                    if ($question->is_task_trigger && !empty($answer)) {
+                        app(TaskService::class)->createTask($questionAnswer);
+                    }
                 }
+
+                $visit->update([
+                    'status' => VisitStatusEnum::VISITED,
+                    'visit_date' => fake()->dateTimeBetween('-10 day', '-1 day')->format('Y-m-d')
+                ]);
             }
         }
     }
