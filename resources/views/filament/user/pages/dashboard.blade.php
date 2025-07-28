@@ -44,9 +44,9 @@
         </div>
 
 
-        @if (count($tasks) > 0)
+        @if (count($this->tasks) > 0)
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                @foreach ($tasks as $task)
+                @foreach ($this->tasks as $task)
                     <div
                         class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow duration-200 flex flex-col">
                         <div class="p-6 flex-grow">
@@ -123,6 +123,10 @@
                 </h3>
             </div>
         @endif
+    </div>
+
+    <div class="mt-6">
+        {{ $this->tasks->links() }}
     </div>
 
     @livewire('user.mark-task-modal')

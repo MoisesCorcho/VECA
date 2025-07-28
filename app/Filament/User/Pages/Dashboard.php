@@ -7,17 +7,26 @@ use Filament\Pages\Dashboard as BaseDashboard;
 use App\Services\TaskService;
 use App\Models\Task;
 use Livewire\Attributes\On;
+use Livewire\WithPagination;
+use Livewire\Attributes\Computed;
 
 class Dashboard extends BaseDashboard
 {
+    use WithPagination;
+
     protected static ?string $navigationIcon = 'heroicon-o-home';
 
     protected static string $view = 'filament.user.pages.dashboard';
 
-    public $tasks;
     public $taskStats;
 
     public $statusFilter = 'pending';
+
+    #[Computed]
+    public function tasks()
+    {
+        return $this->taskService->getTasksForUser(auth()->id(), $this->statusFilter);
+    }
 
     public function getWidgets(): array
     {
@@ -46,14 +55,12 @@ class Dashboard extends BaseDashboard
 
     private function loadTasks(): void
     {
-        $this->tasks = $this->taskService->getTasksForUser(auth()->id(), $this->statusFilter);
         $this->taskStats = $this->taskService->getTaskStats(auth()->id());
     }
 
     public function filterByStatus(?string $status): void
     {
         $this->statusFilter = $status;
-        $this->loadTasks();
     }
 
     public function confirmMarkTask(Task $task, string $action)
