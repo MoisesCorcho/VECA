@@ -25,7 +25,7 @@ class SurveyQuestionObserver
      */
     public function updating(SurveyQuestion $surveyQuestion): void
     {
-        //
+        $this->surveyQuestionService->HandleChangesInOptionsSource($surveyQuestion);
     }
 
     /**
