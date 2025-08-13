@@ -963,10 +963,12 @@ class SurveyQuestionAnswerSeeder extends Seeder
                     continue;
                 }
 
+                $answerDate = fake()->dateTimeBetween('-10 day', '-1 day')->format('Y-m-d');
+
                 $surveyAnswer = SurveyAnswer::create([
                     'user_id' => $user->id,
                     'survey_id' => $survey->id,
-                    'date' => $visit->visit_date,
+                    'date' => $answerDate,
                     'visit_id' => $visit->id
                 ]);
 
@@ -992,7 +994,7 @@ class SurveyQuestionAnswerSeeder extends Seeder
 
                 $visit->update([
                     'status' => VisitStatusEnum::VISITED,
-                    'visit_date' => fake()->dateTimeBetween('-10 day', '-1 day')->format('Y-m-d')
+                    'visit_date' => $answerDate
                 ]);
             }
         }
