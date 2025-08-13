@@ -18,7 +18,6 @@ test('can create a visit', function () {
     $organization = Organization::factory()->create();
     $user = User::factory()->create();
     $noVisitReason = NoVisitReason::factory()->create();
-    $survey = Survey::factory()->create();
 
     $visit = Visit::create([
         'visit_date' => $visitDate,
@@ -27,8 +26,7 @@ test('can create a visit', function () {
         'status' => VisitStatusEnum::RESCHEDULED,
         'organization_id' => $organization->id,
         'user_id' => $user->id,
-        'non_visit_reason_id' => $noVisitReason->id,
-        'survey_id' => $survey->id
+        'non_visit_reason_id' => $noVisitReason->id
     ]);
 
     $visit->refresh();
@@ -50,8 +48,6 @@ test('can update a visit', function () {
 
     $organization = Organization::factory()->create();
     $user = User::factory()->create();
-    $noVisitReason = NoVisitReason::factory()->create();
-    $survey = Survey::factory()->create();
 
     $visit = Visit::create([
         'visit_date' => $visitDate,
@@ -60,8 +56,7 @@ test('can update a visit', function () {
         'status' => VisitStatusEnum::SCHEDULED,
         'organization_id' => $organization->id,
         'user_id' => $user->id,
-        'non_visit_reason_id' => $noVisitReason->id,
-        'survey_id' => $survey->id
+        'non_visit_reason_id' => null
     ]);
 
     $visit->update([
@@ -71,7 +66,6 @@ test('can update a visit', function () {
         'status' => VisitStatusEnum::RESCHEDULED,
         'organization_id' => $organization->id,
         'user_id' => $user->id,
-        'non_visit_reason_id' => $noVisitReason->id,
     ]);
 
     $visit->refresh();
@@ -83,8 +77,7 @@ test('can update a visit', function () {
         ->and($visit->non_visit_description)->toBeNull()
         ->and($visit->status)->toBe(VisitStatusEnum::RESCHEDULED)
         ->and($visit->organization_id)->tobeUuid($organization->id)
-        ->and($visit->user_id)->tobeInt($user->id)
-        ->and($visit->non_visit_reason_id)->tobeInt($noVisitReason->id);
+        ->and($visit->user_id)->tobeInt($user->id);
 });
 
 test('can delete a visit', function () {

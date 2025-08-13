@@ -8,14 +8,16 @@ use App\Services\SurveyQuestionService;
 
 class SurveyQuestionObserver
 {
+    public function __construct(
+        protected SurveyQuestionService $surveyQuestionService
+    ) {}
+
     /**
      * Handle the SurveyQuestion "created" event.
      */
     public function saving(SurveyQuestion $surveyQuestion): void
     {
-        $surveyQuestionService = app(SurveyQuestionService::class);
-
-        $surveyQuestionService->validateHierarchy($surveyQuestion);
+        $this->surveyQuestionService->validateHierarchy($surveyQuestion);
     }
 
     /**
@@ -23,7 +25,7 @@ class SurveyQuestionObserver
      */
     public function updating(SurveyQuestion $surveyQuestion): void
     {
-        //
+        $this->surveyQuestionService->HandleChangesInOptionsSource($surveyQuestion);
     }
 
     /**

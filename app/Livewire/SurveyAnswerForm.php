@@ -5,14 +5,12 @@ namespace App\Livewire;
 use App\Models\Survey;
 use Livewire\Component;
 use Illuminate\View\View;
-use App\Models\SurveyQuestionAnswer;
 use App\Enums\SurveyQuestionsTypeEnum;
-use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use App\Models\Visit;
-use App\Enums\VisitStatusEnum;
 use Livewire\Attributes\Computed;
 use Illuminate\Database\Eloquent\Collection;
+use App\Services\SurveyAnswerService;
 
 class SurveyAnswerForm extends Component
 {
@@ -41,6 +39,11 @@ class SurveyAnswerForm extends Component
         $this->fillAnswersArray();
     }
 
+    public function getSurveyAnswerServiceProperty(): SurveyAnswerService
+    {
+        return app(SurveyAnswerService::class);
+    }
+
     public function updated($propertyName): void
     {
         $this->validateOnly($propertyName);
@@ -60,6 +63,12 @@ class SurveyAnswerForm extends Component
         $rules = [];
 
         foreach ($this->surveyQuestions as $question) {
+
+            // case 0: The question is a task trigger
+            if ($question->is_task_trigger) {
+                $rules['answers.' . $question->id] = 'nullable';
+                continue;
+            }
 
             // Case 1: The question is a top-level question (no parent).
             // It should always be required.
@@ -104,36 +113,17 @@ class SurveyAnswerForm extends Component
         $this->reestructureCheckboxAnswers();
         $this->validate();
 
-        $savedAnswer = $this->survey->answers()->create([
-            'date' => now(),
-            'user_id' => Auth::id(),
-        ]);
+        try {
+            $this->surveyAnswerService->saveSurveyAnswer($this->survey, $this->visit, $this->answers);
+        } catch (\Throwable $th) {
+            Notification::make()
+                ->danger()
+                ->title('Error saving answer')
+                ->body($th->getMessage())
+                ->send();
 
-        $answers = [];
-
-        foreach ($this->answers as $questionId => $answer) {
-            $checkboxQuestions = $this->survey->questions->where('type', SurveyQuestionsTypeEnum::TYPE_CHECKBOX->value)->pluck('id')->toArray();
-
-            if (in_array($questionId, $checkboxQuestions)) {
-                SurveyQuestionAnswer::create([
-                    'survey_answer_id' => $savedAnswer->id,
-                    'survey_question_id' => $questionId,
-                    'answer' => $answer,
-                ]);
-            } else {
-                $answers[] = [
-                    'survey_answer_id' => $savedAnswer->id,
-                    'survey_question_id' => $questionId,
-                    'answer' => is_null($answer) ? json_encode("") : json_encode($answer),
-                ];
-            }
+            return;
         }
-
-        SurveyQuestionAnswer::insert($answers);
-
-        $this->visit->update([
-            'status' => VisitStatusEnum::VISITED
-        ]);
 
         Notification::make()
             ->success()

@@ -114,4 +114,31 @@ final class SurveyQuestionService
 
         return $memberPositions;
     }
+
+    public function HandleChangesInOptionsSource(SurveyQuestion $question): void
+    {
+        if ($question->isDirty('options_source')) {
+            $this->cleanupDatabaseOptionFields($question);
+            $this->cleanupDataField($question);
+        }
+    }
+
+    private function cleanupDatabaseOptionFields(SurveyQuestion $question): void
+    {
+        if ($question->isOptionsSourceChangingTo('static')) {
+            $question->updateQuietly([
+                'options_model' => null,
+                'options_label_column' => null,
+            ]);
+        }
+    }
+
+    private function cleanupDataField(SurveyQuestion $question): void
+    {
+        if ($question->isOptionsSourceChangingTo('database')) {
+            $question->updateQuietly([
+                'data' => null
+            ]);
+        }
+    }
 }

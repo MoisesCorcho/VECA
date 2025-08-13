@@ -22,6 +22,17 @@ enum VisitStatusEnum: string
         };
     }
 
+    public function color(): string
+    {
+        return match ($this) {
+            self::SCHEDULED => '#3788d8',
+            self::VISITED => '#10b981',
+            self::NOT_VISITED => '#ef4444',
+            self::CANCELED => '#ef4444',
+            self::RESCHEDULED => '#f59e0b',
+        };
+    }
+
     public static function keyValuesCombined(): array
     {
         return array_combine(
@@ -30,11 +41,16 @@ enum VisitStatusEnum: string
         );
     }
 
-    public static function colors()
+    /**
+     * Return an array of status values as keys and their corresponding colors as values.
+     *
+     * @return array The status colors.
+     */
+    public static function colors(): array
     {
         return array_combine(
             array_column(self::cases(), 'value'),
-            ['#3788d8', '#10b981', '#ef4444', '#ef4444', '#f59e0b']
+            array_map(fn($case) => $case->color(), self::cases())
         );
     }
 
@@ -113,5 +129,10 @@ enum VisitStatusEnum: string
         return empty($additionalStatuses)
             ? $baseValues
             : [...$baseValues, ...$additionalStatuses];
+    }
+
+    public function hasStatus(self $status): bool
+    {
+        return $this === $status;
     }
 }

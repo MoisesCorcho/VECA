@@ -44,21 +44,13 @@ class VisitSeeder extends Seeder
                 continue;
             }
 
-            for ($i = 0; $i < 20; $i++) {
+            for ($i = 0; $i < 40; $i++) {
                 $randomOrganization = fake()->randomElement($userOrganizations);
-
-                Visit::factory()
-                    ->visited()
-                    ->for($user)
-                    ->for($randomOrganization)
-                    ->for($survey)
-                    ->create();
 
                 Visit::factory()
                     ->scheduled()
                     ->for($user)
                     ->for($randomOrganization)
-                    ->for($survey)
                     ->create();
             }
         }

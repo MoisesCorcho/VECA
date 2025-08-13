@@ -9,6 +9,8 @@ use App\Models\SurveyAnswer;
 use App\Models\SurveyQuestionAnswer;
 use App\Models\Visit;
 use App\Models\SurveyQuestion;
+use App\Enums\VisitStatusEnum;
+use App\Services\TaskService;
 
 class SurveyQuestionAnswerSeeder extends Seeder
 {
@@ -961,27 +963,39 @@ class SurveyQuestionAnswerSeeder extends Seeder
                     continue;
                 }
 
+                $answerDate = fake()->dateTimeBetween('-10 day', '-1 day')->format('Y-m-d');
+
                 $surveyAnswer = SurveyAnswer::create([
                     'user_id' => $user->id,
                     'survey_id' => $survey->id,
-                    'date' => $visit->visit_date,
+                    'date' => $answerDate,
+                    'visit_id' => $visit->id
                 ]);
 
                 foreach ($responseData as $questionId => $answer) {
 
-                    $question = SurveyQuestion::where('question', 'like', "%$questionId%")->first();
+                    $question = SurveyQuestion::where('question', 'like', "$questionId")->first();
 
                     if (!$question) {
                         dump("The question was not found. $questionId");
                         continue;
                     }
 
-                    SurveyQuestionAnswer::create([
+                    $questionAnswer = SurveyQuestionAnswer::create([
                         'survey_answer_id' => $surveyAnswer->id,
                         'survey_question_id' => $question->id,
                         'answer' => $answer,
                     ]);
+
+                    if ($question->is_task_trigger && !empty($answer)) {
+                        app(TaskService::class)->createTask($questionAnswer);
+                    }
                 }
+
+                $visit->update([
+                    'status' => VisitStatusEnum::VISITED,
+                    'visit_date' => $answerDate
+                ]);
             }
         }
     }

@@ -30,6 +30,10 @@ use App\Enums\ModelOptionSourceEnum;
 use App\Services\SurveyQuestionService;
 use App\Models\Organization;
 use App\Models\Member;
+use App\Rules\EnsureOnlyOneTaskTrigger;
+use App\Rules\EnsureAtLeastOneTaskTrigger;
+use App\Rules\CheckboxQuestionCannotBeTask;
+use App\Rules\MemberRequiresOrganization;
 
 class SurveyResource extends Resource
 {
@@ -75,8 +79,13 @@ class SurveyResource extends Resource
                                 TextInput::make('question')
                                     ->required(),
 
-                                TextInput::make('description')
-                                    ->columnSpanFull(),
+                                TextInput::make('description'),
+
+                                Toggle::make('is_task_trigger')
+                                    ->label('Generates a pending task for the seller')
+                                    ->helperText('If active, a non-empty answer to this question will be considered a pending task in the seller dashboard. Only works in one question per survey.')
+                                    ->onColor('success')
+                                    ->offColor('danger'),
 
                                 Select::make('parent_id')
                                     ->label(__('Parent question'))
@@ -112,25 +121,33 @@ class SurveyResource extends Resource
                                                 'static' => __('Static'),
                                                 'database' => __('Database'),
                                             ])
-                                            ->default('static'),
+                                            ->default('static')
+                                            ->afterStateUpdated(function (Set $set) {
+                                                $set('options_model', null);
+                                            }),
 
                                         Select::make('options_model')
                                             ->label(__('Options model'))
                                             ->live()
-                                            ->options(function (Get $get) {
+                                            ->options(fn() => ModelOptionSourceEnum::keyValuesCombined())
+                                            ->disableOptionWhen(function (string $value, Get $get) {
+                                                // Members can only be selected as options if there are
+                                                // Organizations questions created
+                                                $formQuestions = collect($get('../../questions'));
 
-                                                $organizationQuestion = collect($get('../../questions'))
+                                                $actualQuestion = $get('..');
+
+                                                $organizationExists = $formQuestions
+                                                    ->reject(fn($q) => $q === $actualQuestion)
                                                     ->contains('options_model', Organization::class);
 
-                                                if (!$organizationQuestion) {
-                                                    return collect(ModelOptionSourceEnum::keyValuesCombined())
-                                                        ->except(Member::class)
-                                                        ->toArray();
-                                                }
-
-                                                return ModelOptionSourceEnum::keyValuesCombined();
+                                                return $value === Member::class && !$organizationExists;
                                             })
-                                            ->visible(fn(Get $get): bool => $get('options_source') == 'database'),
+                                            ->required()
+                                            ->visible(fn(Get $get): bool => $get('options_source') == 'database')
+                                            ->afterStateUpdated(function (Set $set) {
+                                                $set('options_label_column', null);
+                                            }),
 
                                         Select::make('options_label_column')
                                             ->label(__('Options label column'))
@@ -139,7 +156,7 @@ class SurveyResource extends Resource
                                                 return $get('options_model') ? $sqService->getOptionsLabel($get('options_model')) : [];
                                             })
                                             ->required()
-                                            ->visible(fn(Get $get): bool => (bool) $get('options_model')),
+                                            ->visible(fn(Get $get): bool => (bool) $get('options_model') && $get('options_source') == 'database'),
                                     ])
                                     ->columns(3)
                                     ->visible(fn(Get $get): bool => $get('type') == SurveyQuestionsTypeEnum::TYPE_SELECT->value),
@@ -161,6 +178,12 @@ class SurveyResource extends Resource
                                     ->visible(function (Get $get): bool {
                                         return !in_array($get('type'), SurveyQuestionsTypeEnum::nonOptionsTypes()) && !empty($get('type') && $get('options_source') == 'static');
                                     })
+                            ])
+                            ->rules([
+                                new EnsureOnlyOneTaskTrigger,
+                                new EnsureAtLeastOneTaskTrigger,
+                                new CheckboxQuestionCannotBeTask,
+                                new MemberRequiresOrganization,
                             ])
                             ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
                                 if (in_array($data['type'], SurveyQuestionsTypeEnum::nonOptionsTypes() ?? [])) {

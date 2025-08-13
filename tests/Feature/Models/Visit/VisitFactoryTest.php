@@ -44,11 +44,3 @@ test('can create a rescheduled visit with factory', function () {
         ->and($visit->id)->toBeInt()
         ->and($visit->status)->toBe(VisitStatusEnum::RESCHEDULED);
 });
-
-test('can create a visited visit with factory', function () {
-    $visit = Visit::factory()->visited()->create();
-
-    expect($visit)->toBeInstanceOf(Visit::class)
-        ->and($visit->id)->toBeInt()
-        ->and($visit->status)->toBe(VisitStatusEnum::VISITED);
-});

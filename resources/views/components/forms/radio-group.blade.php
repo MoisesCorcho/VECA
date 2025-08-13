@@ -7,7 +7,7 @@
                 type="radio"
                 value="{{ $label }}"
                 name="answers[{{ $question->id }}]"
-                wire:model.defer="answers.{{ $question->id }}"
+                wire:model.live="answers.{{ $question->id }}"
                 class="text-primary focus:ring-primary border-gray-300 dark:border-gray-700 dark:bg-gray-800"
             />
             <span class="text-sm">{{ $label }}</span>

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->text('answer')->nullable();
             $table->foreignIdFor(SurveyQuestion::class, 'survey_question_id')->constrained();
-            $table->foreignIdFor(SurveyAnswer::class, 'survey_answer_id')->constrained();
+            $table->foreignIdFor(SurveyAnswer::class, 'survey_answer_id')->constrained()->cascadeOnDelete();
         });
     }
 

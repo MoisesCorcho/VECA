@@ -33,74 +33,64 @@ final class FilamentHelpers
     }
 
     /**
-     * Function to determine if a field should be disabled
+     * Verifies if a field from the visit form will be disabled based on the given conditions
      *
-     * @param array $disabledOnOriginalStatuses Original statues that disable the field
-     * @param array $disabledOnCurrentStatuses Actual statues that disable the field
-     * @param array $additionalConditions Additional conditions
-     * @param bool $disableOnCreate If the field should be disabled on create (default false)
-     * @param bool $disableOnEdit If the field should be disabled on edit (default false)
+     * @param  \Illuminate\Database\Eloquent\Model|null  $record
+     * @param  mixed  $currentStatus Current status
+     * @param  array  $disabledOnOriginalStatuses Original statues that disable the field
+     * @param  array  $disabledOnCurrentStatuses Actual statues that disable the field
+     * @param  array  $additionalConditions Additional conditions
+     * @param  bool  $disableOnCreate If the field should be disabled on create (default false)
+     * @param  bool  $disableOnEdit If the field should be disabled on edit (default false)
+     * @return bool
      */
-    public static function shouldDisable(
+    public static function disableFieldFromVisitForm(
+        ?Model $record,
+        mixed $currentStatus = null,
         array $disabledOnOriginalStatuses = [],
         array $disabledOnCurrentStatuses = [],
         array $additionalConditions = [],
         bool $disableOnCreate = false,
         bool $disableOnEdit = false,
-    ): callable {
-        return function (callable $get, ?Model $record) use (
-            $disabledOnOriginalStatuses,
-            $disabledOnCurrentStatuses,
-            $additionalConditions,
-            $disableOnCreate,
-            $disableOnEdit
-        ) {
-            // If is creation
-            if (!$record) {
-                if ($disableOnCreate) {
-                    return true;
-                }
+    ): bool {
+        // If is creation
+        if (!$record) {
 
-                // verify conditions based on current status
-                $currentStatus = $get('status');
-                if ($currentStatus && in_array($currentStatus, $disabledOnCurrentStatuses)) {
-                    return true;
-                }
-
-                return false;
-            }
-
-            // If is edit
-            if ($disableOnEdit) {
+            if ($disableOnCreate) {
                 return true;
             }
 
-            // If is update
-            $currentStatus = $get('status');
-            $originalStatus = $record->getOriginal('status') ?? $record->status;
-
-            // Verify conditions based on original status
-            if (in_array($originalStatus, $disabledOnOriginalStatuses)) {
-                return true;
-            }
-
-            // Verify conditions based on current status
             if ($currentStatus && in_array($currentStatus, $disabledOnCurrentStatuses)) {
                 return true;
             }
 
-            // Verify additional conditions
-            foreach ($additionalConditions as $condition) {
-                if (is_callable($condition)) {
-                    if ($condition($get, $record, $currentStatus, $originalStatus)) {
-                        return true;
-                    }
-                } elseif (is_bool($condition) && $condition) {
+            return false;
+        }
+
+        if ($disableOnEdit) {
+            return true;
+        }
+
+        $originalStatus = $record->getOriginal('status') ?? $record->status;
+
+        if (in_array($originalStatus, $disabledOnOriginalStatuses)) {
+            return true;
+        }
+
+        if ($currentStatus && in_array($currentStatus, $disabledOnCurrentStatuses)) {
+            return true;
+        }
+
+        foreach ($additionalConditions as $condition) {
+            if (is_callable($condition)) {
+                if ($condition($record, $currentStatus, $originalStatus)) {
                     return true;
                 }
+            } elseif (is_bool($condition) && $condition) {
+                return true;
             }
+        }
 
-            return false;
-        };
+        return false;
     }
 }

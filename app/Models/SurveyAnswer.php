@@ -14,7 +14,8 @@ class SurveyAnswer extends Model
     protected $fillable = [
         'date',
         'survey_id',
-        'user_id'
+        'user_id',
+        'visit_id',
     ];
 
     protected function casts(): array
@@ -27,5 +28,20 @@ class SurveyAnswer extends Model
     public function survey(): BelongsTo
     {
         return $this->belongsTo(Survey::class, 'survey_id');
+    }
+
+    public function surveyQuestionAnswers()
+    {
+        return $this->hasMany(SurveyQuestionAnswer::class, 'survey_answer_id');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function visit(): BelongsTo
+    {
+        return $this->belongsTo(Visit::class);
     }
 }

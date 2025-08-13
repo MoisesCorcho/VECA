@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Survey;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\User;
+use App\Models\Visit;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\SurveyAnswer>
@@ -22,6 +23,7 @@ class SurveyAnswerFactory extends Factory
             'date' => $this->faker->date(),
             'survey_id' => Survey::factory(),
             'user_id' => User::factory(),
+            'visit_id' => Visit::factory()
         ];
     }
 }

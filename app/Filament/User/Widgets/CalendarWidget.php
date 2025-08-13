@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Model;
 use App\Enums\VisitStatusEnum;
 use App\Helpers\FilamentHelpers;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 
 class CalendarWidget extends BaseCalendarWidget
 {
@@ -112,13 +114,13 @@ class CalendarWidget extends BaseCalendarWidget
         return Forms\Components\Select::make('status')
             ->label(__('Status'))
             ->live()
-            ->options(fn(callable $get, callable $set, ?Model $record) => $this->getStatusOptions($get, $set, $record))
+            ->options(fn(Get $get, Set $set, ?Model $record) => $this->getStatusOptions($get, $set, $record))
             ->default(VisitStatusEnum::SCHEDULED->value)
             ->required()
-            ->disabled(fn($record) => !$record);
+            ->disabled(fn($record, Get $get) => $this->getStatusDisabledCondition($record, $get));
     }
 
-    protected function getStatusOptions(callable $get, callable $set, ?Model $record): array
+    protected function getStatusOptions(Get $get, Set $set, ?Model $record): array
     {
         return collect(VisitStatusEnum::keyValuesCombined())
             ->when(!$record, fn($collection) => $collection->forget('rescheduled'))
@@ -127,8 +129,51 @@ class CalendarWidget extends BaseCalendarWidget
             ->all();
     }
 
-    protected function getOrganizationDisabledCondition()
+    protected function getOrganizationDisabledCondition(Visit|null $visit, Get|null $get): bool
     {
-        return FilamentHelpers::shouldDisable(disableOnEdit: true);
+        return FilamentHelpers::disableFieldFromVisitForm(
+            record: $visit,
+            currentStatus: $get('status'),
+            disableOnEdit: true
+        );
+    }
+
+    protected function getVisitDateDisabledCondition(Visit|null $visit, Get|null $get): bool
+    {
+        return FilamentHelpers::disableFieldFromVisitForm(
+            record: $visit,
+            currentStatus: $get('status'),
+            disableOnEdit: true
+        );
+    }
+
+    protected function getStatusDisabledCondition(Visit|null $visit, Get|null $get): bool
+    {
+        return FilamentHelpers::disableFieldFromVisitForm(
+            record: $visit,
+            currentStatus: $get('status'),
+            disableOnCreate: true,
+            disabledOnOriginalStatuses: VisitStatusEnum::finalStatuses(returnType: 'enum')
+        );
+    }
+
+    protected function getNonVisitReasonDisabledCondition(Visit|null $visit, Get|null $get): bool
+    {
+        return FilamentHelpers::disableFieldFromVisitForm(
+            record: $visit,
+            currentStatus: $get('status'),
+            disableOnCreate: true,
+            disabledOnOriginalStatuses: VisitStatusEnum::finalStatuses(returnType: 'enum')
+        );
+    }
+
+    protected function getNonVisitDescriptionDisabledCondition(Visit|null $visit, Get|null $get): bool
+    {
+        return FilamentHelpers::disableFieldFromVisitForm(
+            record: $visit,
+            currentStatus: $get('status'),
+            disableOnCreate: true,
+            disabledOnOriginalStatuses: VisitStatusEnum::finalStatuses(returnType: 'enum')
+        );
     }
 }
