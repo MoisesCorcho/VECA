@@ -25,24 +25,24 @@ class SurveyQuestionFactory extends Factory
             'description' => $this->faker->sentence(),
             'data' => null,
             'survey_id' => Survey::factory(),
+            'parent_id' => null,
+            'triggering_answer' => null,
+            'is_task_trigger' => false,
+            'options_source' => 'static',
+            'options_model' => null,
+            'options_label_column' => null,
         ];
     }
 
     public function withData(): static
     {
         $data = [
-            [
-                'uuid' => Str::uuid(),
-                'text' => 'Sell / Product Promotion / Credit Documents'
-            ],
-            [
-                'uuid' => Str::uuid(),
-                'text' => 'Accounts Receivable Collection / Payment Agreements'
-            ],
+            'Sell / Product Promotion / Credit Documents',
+            'Accounts Receivable Collection / Payment Agreements'
         ];
 
         return $this->state(fn(array $attributes) => [
-            'data' => json_encode($data),
+            'data' => $data,
         ]);
     }
 }

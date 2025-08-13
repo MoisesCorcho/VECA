@@ -4,6 +4,7 @@ use App\Models\Survey;
 use App\Models\SurveyAnswer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
+use App\Models\Visit;
 
 uses(RefreshDatabase::class);
 
@@ -11,7 +12,8 @@ test('can create a survey answer', function () {
     SurveyAnswer::create([
         'date' => now(),
         'survey_id' => Survey::factory()->create()->id,
-        'user_id' => User::factory()->create()->id
+        'user_id' => User::factory()->create()->id,
+        'visit_id' => Visit::factory()->create()->id
     ]);
 
     expect(SurveyAnswer::all())->toHaveCount(1)
@@ -26,7 +28,8 @@ test('can update a survey answer', function () {
     $surveyAnswer = SurveyAnswer::create([
         'date' => now(),
         'survey_id' => Survey::factory()->create()->id,
-        'user_id' => User::factory()->create()->id
+        'user_id' => User::factory()->create()->id,
+        'visit_id' => Visit::factory()->create()->id
     ]);
 
     $newData = [
@@ -49,7 +52,8 @@ test('survey answer belongs to a survey', function () {
     $surveyAnswer = SurveyAnswer::create([
         'date' => now(),
         'survey_id' => $survey->id,
-        'user_id' => User::factory()->create()->id
+        'user_id' => User::factory()->create()->id,
+        'visit_id' => Visit::factory()->create()->id
     ]);
 
     expect($surveyAnswer->survey)->toBeInstanceOf(Survey::class)

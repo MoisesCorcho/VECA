@@ -5,6 +5,7 @@ use App\Models\Survey;
 use Illuminate\Support\Str;
 use App\Models\SurveyQuestion;
 use App\Enums\SurveyQuestionsTypeEnum;
+use App\Models\Visit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Laravel\get;
@@ -190,19 +191,31 @@ test('a survey can have answers', function () {
     $date = now();
     $date2 = now()->addDay();
 
+    $visit1 = Visit::factory()->scheduled()->create([
+        'user_id' => $user->id
+    ]);
+
+    $visit2 = Visit::factory()->scheduled()->create([
+        'user_id' => $user->id
+    ]);
+
     $surveyAnswer1 = $survey->answers()->create([
         'date' => $date,
-        'user_id' => $user->id
+        'user_id' => $user->id,
+        'visit_id' => $visit1->id
     ]);
 
     $surveyAnswer2 = $survey->answers()->create([
         'date' => $date2,
-        'user_id' => $user->id
+        'user_id' => $user->id,
+        'visit_id' => $visit2->id
     ]);
 
     expect($survey->answers)->toHaveCount(2)
         ->and($surveyAnswer1->date->toDateTimeString())->toBe($date->toDateTimeString())
         ->and($surveyAnswer1->survey_id)->toBe($survey->id)
+        ->and($surveyAnswer1->visit_id)->toBe($visit1->id)
         ->and($surveyAnswer2->date->toDateTimeString())->toBe($date2->toDateTimeString())
-        ->and($surveyAnswer2->survey_id)->toBe($survey->id);
+        ->and($surveyAnswer2->survey_id)->toBe($survey->id)
+        ->and($surveyAnswer2->visit_id)->toBe($visit2->id);
 });

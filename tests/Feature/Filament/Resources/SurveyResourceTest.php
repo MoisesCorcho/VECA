@@ -369,11 +369,3 @@ describe('Survey Creation - Authorization', function () {
             ->assertForbidden();
     });
 });
-
-describe('Survey Update - Parent/Child Questions', function () {
-    beforeEach(fn() => Repeater::fake());
-
-    test('fails when child question has invalid parent', function () {
-        // This Test is just for update
-    });
-});
