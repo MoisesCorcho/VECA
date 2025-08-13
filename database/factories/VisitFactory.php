@@ -22,11 +22,15 @@ class VisitFactory extends Factory
      */
     public function definition(): array
     {
+        $visitStatuses = collect(VisitStatusEnum::cases())
+            ->filter(fn($status) => $status->value !== 'visited')
+            ->pluck('value');
+
         return [
             'visit_date' => $this->faker->dateTimeBetween('-1 week', '+1 week')->format('Y-m-d'),
             'rescheduled_date' => $this->faker->dateTimeBetween('-1 week', '+1 week')->format('Y-m-d'),
             'non_visit_description' => $this->faker->sentence(),
-            'status' => $this->faker->randomElement(VisitStatusEnum::cases())->value,
+            'status' => $this->faker->randomElement($visitStatuses),
             'organization_id' => Organization::factory(),
             'user_id' => User::factory(),
             'non_visit_reason_id' => NoVisitReason::factory(),
