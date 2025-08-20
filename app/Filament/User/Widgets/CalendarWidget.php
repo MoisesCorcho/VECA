@@ -15,6 +15,7 @@ use App\Helpers\FilamentHelpers;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use App\Models\User;
 
 class CalendarWidget extends BaseCalendarWidget
 {
@@ -175,5 +176,31 @@ class CalendarWidget extends BaseCalendarWidget
             disableOnCreate: true,
             disabledOnOriginalStatuses: VisitStatusEnum::finalStatuses(returnType: 'enum')
         );
+    }
+
+    protected function getOrganizationField()
+    {
+        return Forms\Components\Select::make('organization_id')
+            ->label(__('Organization'))
+            ->options(function (Get $get) {
+                $userId = auth()->id();
+
+                if ($userId) {
+                    return User::find($userId)
+                        ?->organizations
+                        ->pluck('name', 'id')
+                        ->toArray() ?? [];
+                }
+
+                return [];
+            })
+            ->searchable()
+            ->preload()
+            ->live()
+            ->afterStateUpdated(function ($state, Set $set) {
+                $this->updateOrganizationFields($state, $set);
+            })
+            ->required()
+            ->disabled(fn($record, Get $get) => $this->getOrganizationDisabledCondition($record, $get));
     }
 }
